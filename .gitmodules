@@ -1,0 +1,6 @@
+[submodule "ws-test"]
+	path = ws-test
+	url = https://github.com/mchen0037/ws-test
+[submodule "camera_callibration"]
+	path = camera_callibration_aruco
+	url = https://github.com/abakisita/camera_calibration
