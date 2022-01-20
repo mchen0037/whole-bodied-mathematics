@@ -128,14 +128,14 @@ camera_1 = cv2.VideoCapture(0)
 camera_2 = cv2.VideoCapture(4)
 
 with open('camera_calibration_matrices/calibration_1.yaml') as f:
-    loadeddict = yaml.load(f)
+    loadeddict = yaml.load(f, Loader=yaml.FullLoader)
 mtx_1 = loadeddict.get('camera_matrix')
 dist_1 = loadeddict.get('dist_coeff')
 mtx_1 = np.array(mtx_1)
 dist_1 = np.array(dist_1)
 
 with open('camera_calibration_matrices/calibration_2.yaml') as f:
-    loadeddict = yaml.load(f)
+    loadeddict = yaml.load(f,Loader=yaml.FullLoader)
 mtx_2 = loadeddict.get('camera_matrix')
 dist_2 = loadeddict.get('dist_coeff')
 mtx_2 = np.array(mtx_2)
