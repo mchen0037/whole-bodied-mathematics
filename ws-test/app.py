@@ -20,6 +20,88 @@ img_dict = []
 camera_aruco_pose_dict = {}
 aruco_camera_pose_dict = {}
 
+def update_pose_dicts():
+    img_dict = get_camera_images(cameras)
+
+    # Update the State of the camera images
+    # get the camera images and esimate the positions of each
+    # aruco marker based on the images
+    # This giant for loop updates aruco_camera_pose_dict
+
+    for key in img_dict:
+        image = img_dict[key]["dst"]
+        newcameramtx = img_dict[key]["newcameramtx"]
+        dist = img_dict[key]["dist"]
+        ret = img_dict[key]["ret"]
+        # detect any aruco markers in the image
+        corners, detected_aruco_ids, rejectedImgPoints = aruco.detectMarkers(
+            image, aruco_dict, parameters=arucoParams
+        )
+        if len(corners) == 0:
+            # print("pass")
+            pass
+        else:
+            # estimate the position of aruco markers in the image frame
+            # https://docs.opencv.org/4.5.3/d9/d6a/group__aruco.html#ga84dd2e88f3e8c3255eb78e0f79571bd1
+            # this returns a list of rotation vectors and a list of translation vectors of where each id is located.
+
+            rvecs, tvecs, _objPoints = aruco.estimatePoseSingleMarkers(
+                corners,
+                markerLength,
+                newcameramtx,
+                dist,
+                None,
+                None
+            )
+
+            # ret
+            if ret != 0:
+                if detected_aruco_ids is not None:
+                    # draw the detected markers (squares) around each aruco marker
+                    image = aruco.drawDetectedMarkers(
+                        image,
+                        corners,
+                        detected_aruco_ids,
+                        (0,255,0)
+                    )
+                    # go through each detected aruco marker and draw the axis and
+                    # put the data in a dictionary, prepped for JSON transfer
+                    marker_id_pose_dict = {}
+
+                    for i, aruco_id in enumerate(detected_aruco_ids):
+                        if aruco_id[0] in marker_id_pose_dict.keys():
+                            marker_id_pose_dict[aruco_id[0]]["tvec"] = tvecs[i].tolist()
+                            marker_id_pose_dict[aruco_id[0]]["rvec"] = rvecs[i].tolist()
+                        else:
+                            rvec_world, tvec_world = transform_to_world(
+                                key,rvecs[i][0],tvecs[i][0]
+                            )
+                            marker_id_pose_dict[aruco_id[0]] = {
+                                "rvec": rvec_world,
+                                "tvec": tvec_world
+                            }
+                    # if key not in camera_aruco_pose_list.keys():
+                    camera_aruco_pose_dict[key] = marker_id_pose_dict
+        # Rearrange the dictionary so that aruco markers take priority
+        aruco_camera_pose_dict = get_aruco_camera_poses(camera_aruco_pose_dict)
+        # print(aruco_camera_pose_dict)
+        # print(aruco_camera_pose_dict)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+        # show the image
+        cv2.imshow("img_dict" + str(key),image)
+
+    # Calculate the average rvec and tvec of each aruco marker, from each camera.
+    for aruco_marker in aruco_camera_pose_dict:
+        vec_len = aruco_camera_pose_dict[aruco_marker]['tvec'].shape[0]
+        reshaped_tvec = aruco_camera_pose_dict[aruco_marker]['tvec'].reshape(vec_len//3, 3)
+        reshaped_rvec = aruco_camera_pose_dict[aruco_marker]['rvec'].reshape(vec_len//3, 3)
+        aruco_camera_pose_dict[aruco_marker]['rvec'] = np.mean(reshaped_rvec, axis=0)
+        aruco_camera_pose_dict[aruco_marker]['tvec'] = np.mean(reshaped_tvec, axis=0)
+
+
+
 @app.before_first_request
 def state_thread():
     def run_state():
@@ -27,65 +109,7 @@ def state_thread():
         global camera_aruco_pose_dict
         global aruco_camera_pose_dict
         while True:
-            img_dict = get_camera_images(cameras)
-            for key in img_dict:
-                image = img_dict[key]["dst"]
-                newcameramtx = img_dict[key]["newcameramtx"]
-                dist = img_dict[key]["dist"]
-                ret = img_dict[key]["ret"]
-                # detect any aruco markers in the image
-                corners, detected_aruco_ids, rejectedImgPoints = aruco.detectMarkers(
-                    image, aruco_dict, parameters=arucoParams
-                )
-                if len(corners) == 0:
-                    # print("pass")
-                    pass
-                else:
-                    # estimate the position of aruco markers in the image frame
-                    # https://docs.opencv.org/4.5.3/d9/d6a/group__aruco.html#ga84dd2e88f3e8c3255eb78e0f79571bd1
-                    # this returns a list of rotation vectors and a list of translation vectors of where each id is located.
-
-                    rvecs, tvecs, _objPoints = aruco.estimatePoseSingleMarkers(corners, markerLength, newcameramtx, dist, None, None)
-                    # id_pose_dict = {}
-                    if ret != 0:
-                        if detected_aruco_ids is not None:
-                            # draw the detected markers (squares) around each aruco marker
-                            image = aruco.drawDetectedMarkers(image, corners, detected_aruco_ids, (0,255,0))
-                            # go through each detected aruco marker and draw the axis and
-                            # put the data in a dictionary, prepped for JSON transfer
-                            marker_id_pose_dict = {}
-
-                            for i, aruco_id in enumerate(detected_aruco_ids):
-                                if aruco_id[0] in marker_id_pose_dict.keys():
-                                    marker_id_pose_dict[aruco_id[0]]["tvec"] = tvecs[i].tolist()
-                                    marker_id_pose_dict[aruco_id[0]]["rvec"] = rvecs[i].tolist()
-                                else:
-                                    rvec_world, tvec_world = transform_to_world(
-                                        key,rvecs[i][0],tvecs[i][0]
-                                    )
-                                    marker_id_pose_dict[aruco_id[0]] = {
-                                        "rvec": rvec_world,
-                                        "tvec": tvec_world
-                                    }
-                            # if key not in camera_aruco_pose_list.keys():
-                            camera_aruco_pose_dict[key] = marker_id_pose_dict
-                # Rearrange the dictionary so that aruco markers take priority
-                aruco_camera_pose_dict = get_aruco_camera_poses(camera_aruco_pose_dict)
-                # print(aruco_camera_pose_dict)
-                # Calculate the average rvec and tvec of each aruco marker, from each camera.
-                for aruco_marker in aruco_camera_pose_dict:
-                    vec_len = aruco_camera_pose_dict[aruco_marker]['tvec'].shape[0]
-                    reshaped_tvec = aruco_camera_pose_dict[aruco_marker]['tvec'].reshape(vec_len//3, 3)
-                    reshaped_rvec = aruco_camera_pose_dict[aruco_marker]['rvec'].reshape(vec_len//3, 3)
-                    aruco_camera_pose_dict[aruco_marker]['rvec'] = np.mean(reshaped_rvec, axis=0)
-                    aruco_camera_pose_dict[aruco_marker]['tvec'] = np.mean(reshaped_tvec, axis=0)
-
-                # print(aruco_camera_pose_dict)
-
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
-                # show the image
-                cv2.imshow("img_dict" + str(key),image)
+            update_pose_dicts()
 
     thread_state = threading.Thread(target=run_state)
     thread_state.start()
@@ -156,6 +180,7 @@ def get_camera_images(cameras):
         dist = camera_dict["dist"]
         newcameramtx = camera_dict["newcameramtx"]
         camera = camera_dict["data"]
+        # ret is a boolean value which tells me if the frame is read correctly
         ret, img = camera.read()
         img_gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
         # undistort the image
@@ -204,6 +229,7 @@ def transform_to_world(camera_id, rvec, tvec):
     return rvec, tvec
 
 def get_aruco_camera_poses(camera_aruco_pose_dict):
+    # Restructures the data structure.
     # Iterate through each camera and find the aruco markers detected by them
     # Group by the aruco_ids and append each rvec detected by the camera
     aruco_camera_pose_dict = {}
