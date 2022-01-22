@@ -92,6 +92,7 @@ def update_pose_dicts():
         # show the image
         cv2.imshow("img_dict" + str(key),image)
 
+    #  left off here
     # Calculate the average rvec and tvec of each aruco marker, from each camera.
     for aruco_marker in aruco_camera_pose_dict:
         vec_len = aruco_camera_pose_dict[aruco_marker]['tvec'].shape[0]

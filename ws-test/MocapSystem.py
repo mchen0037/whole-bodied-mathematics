@@ -31,8 +31,11 @@ class MocapSystem(object):
 
                 # Get the information from calibration matrices
                 # Put the matrix in camera_id_meta_dict
+                # TODO: should I just use one camera calibration matrix or
+                # multiple?
                 file_name = ("./camera_calibration_matrices/calibration_" +
-                    cam +
+                    # cam +
+                    str(2) +
                     ".yaml"
                 )
                 try:
@@ -60,6 +63,7 @@ class MocapSystem(object):
                     (w, h)
                 )
                 camera_meta["new_camera_mtx"] = new_camera_mtx
+                camera_meta["roi"] = roi
                 self.camera_id_meta_dict[cam] = camera_meta
 
         # After finding all camera matrices, make sure we assert that we have
