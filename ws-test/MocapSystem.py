@@ -20,7 +20,7 @@ class MocapSystem(object):
         #     "new_camera_mtx": np.array, the new camera matrix to undistort img
         # }
         self.camera_id_meta_dict, self.active_video_streams = self.load_cameras()
-        self.aruco_camera_pose_dict = {}
+        self.aruco_pose_dict = {}
 
         self.thread = Thread(target=self.update_detected_markers, args=())
         self.thread.daemon = True
@@ -94,11 +94,68 @@ class MocapSystem(object):
         return camera_id_meta_dict, active_video_streams
 
     def update_detected_markers(self):
+        # Restructure the data so that we can prep for JSON Transfer
+        # Iterate through each camera and their detected aruco markers
         while True:
+            # {
+            #     1 (aruco id): {
+            #         "rvec": np.array(3x,),
+            #         "tvec": np.array(3x,)
+            #     }
+            # }
+            aruco_pose_dict = {}
             for v in self.active_video_streams:
                 # TODO: Aggregate the aruco ids detected from each camera and
                 # change the data structure to id->camera->rvec,tvec
-                pass
+                for aruco_id in v.detected_aruco_ids_dict.keys():
+                    if aruco_id in aruco_pose_dict:
+                        rvec_arr = v.detected_aruco_ids_dict[aruco_id]["rvec"]
+                        tvec_arr = v.detected_aruco_ids_dict[aruco_id]["tvec"]
+                        aruco_pose_dict[aruco_id] = np.append(
+                            rvec_arr, aruco_pose_dict["rvec"]
+                        )
+                        aruco_pose_dict[aruco_id] = np.append(
+                            tvec_arr, aruco_pose_dict["tvec"]
+                        )
+                    else:
+                        aruco_pose_dict[aruco_id] = (
+                            v.detected_aruco_ids_dict[aruco_id]
+                        )
 
-
+            self.aruco_pose_dict = aruco_pose_dict
             time.sleep(0.1)
+
+    def get_average_detected_markers(self):
+        # Calculates the average of the detected markers and returns
+        # a singular list for each aruco_id
+        # Take the average across all aruco markers detected
+        avg_aruco_poses_dict = {}
+        for aruco_marker in self.aruco_pose_dict:
+            vec_len = self.aruco_pose_dict[aruco_marker]['tvec'].shape[0]
+            reshaped_rvec = (
+                self.aruco_pose_dict[aruco_marker]['rvec'].reshape(
+                    vec_len // 3, 3
+                )
+            )
+            reshaped_tvec = (
+                self.aruco_pose_dict[aruco_marker]['tvec'].reshape(
+                    vec_len // 3, 3
+                )
+            )
+            avg_aruco_poses_dict[aruco_marker] = {
+                "rvec": np.mean(reshaped_rvec, axis=0),
+                "tvec": np.mean(reshaped_tvec, axis=0)
+            }
+        return avg_aruco_poses_dict
+
+
+
+
+
+
+
+
+
+
+
+# end

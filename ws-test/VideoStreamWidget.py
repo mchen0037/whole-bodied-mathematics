@@ -29,8 +29,9 @@ class VideoStreamWidget(object):
 
         # {
         #     1: { # these are the aruco id value
-                # "rvec": np.array(3,1) # rotation vector
-        #         "tvec": np.array(3,1) # translation vector
+        #        "camera_id": int the camera_id  
+        #        "rvec": np.array(3,1) # rotation vector
+        #        "tvec": np.array(3,1) # translation vector
         #     }
         # }
         self.detected_aruco_ids_dict = {}
@@ -143,6 +144,7 @@ class VideoStreamWidget(object):
                                 tvecs[i][0]
                             )
                             marker_id_pose_dict[aruco_id[0]] = {
+                                "camera_id": self.id,
                                 "rvec": rvec_world,
                                 "tvec": tvec_world
                             }

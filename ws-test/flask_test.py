@@ -28,23 +28,27 @@ def echo(sock):
     # p_4 = {"x":4,"y":4}
     l = [p_0, p_1, p_2, p_3]
     data = {"P_2": p_2}
-    global aruco_camera_pose_dict
     # print(data)
     # res = jsonify([1, 2, 3, 4, 5])
     while True:
         # send the data of the points over the websocket
         sock.send(data)
 
-        if aruco_camera_pose_dict:
-            for aruco_marker in aruco_camera_pose_dict:
-                point_key = "P_" + str(aruco_marker)
+        avg_aruco_poses_dict = m.get_average_detected_markers()
+        if avg_aruco_poses_dict:
+            for aruco_marker in avg_aruco_poses_dict:
+                point_key = "P_{" + str(aruco_marker) + "}"
                 if point_key in data.keys():
-                    data[point_key]["x"] = aruco_camera_pose_dict[aruco_marker]["tvec"][0]
-                    data[point_key]["y"] = aruco_camera_pose_dict[aruco_marker]["tvec"][1]
+                    data[point_key]["x"] = (
+                        avg_aruco_poses_dict[aruco_marker]["tvec"][0]
+                    )
+                    data[point_key]["y"] = (
+                        avg_aruco_poses_dict[aruco_marker]["tvec"][1]
+                    )
                 else:
                     data[point_key] = {
-                        "x": aruco_camera_pose_dict[aruco_marker]["tvec"][0],
-                        "y": aruco_camera_pose_dict[aruco_marker]["tvec"][1]
+                        "x": avg_aruco_poses_dict[aruco_marker]["tvec"][0],
+                        "y": avg_aruco_poses_dict[aruco_marker]["tvec"][1]
                     }
 
         time.sleep(0.1)
