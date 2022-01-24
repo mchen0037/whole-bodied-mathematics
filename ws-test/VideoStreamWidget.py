@@ -23,8 +23,9 @@ class VideoStreamWidget(object):
         self.status = None # Status of the camera
         self.use_roi = True # roi = Region of Interest
         self.img_raw = None # save for data collection
-        self.undistorted_img = None # If use_roi is True, crop the img
         self.img_gray = None # img_gray is undistorted
+        self.undistorted_img = None # If use_roi is True, crop the img
+        self.img_with_aruco = None
 
         # {
         #     1: { # these are the aruco id value
@@ -56,7 +57,7 @@ class VideoStreamWidget(object):
         # TODO: Refactor this to work into files as well, rather than hard-coding it in here.
         # TODO: cameras 2, 3, 4.
         #   Camera 2 and 3 have data collected already, 4 needs measurements
-        if camera_id == 1:
+        if self.id == 1:
             # Camera Matrices are calculated through test_icp.jl
             CAM_1_MAT = np.array([
                 0.10843942862049338, 0.9831140893315748, -0.1474027736449005, -255.61978107664206,
@@ -67,16 +68,22 @@ class VideoStreamWidget(object):
             CAM_1_ROT_MAT = CAM_1_MAT[:,0:3][0:3]
             CAM_1_TRA_MAT = CAM_1_MAT[:,3][0:3]
             new_tvec = CAM_1_ROT_MAT @ tvec + CAM_1_TRA_MAT
-        elif camera_id == 2:
+        elif self.id == 2:
             pass
-        elif camera_id == 3:
+        elif self.id == 3:
             pass
-        elif camera_id == 4:
+        elif self.id == 4:
             pass
         return rvec, tvec
 
-    def update(self):
+    def update(self, keep_old_values=False):
         while True:
+            # Reinitialize as an empty dictionary so that we can clear any old
+            # data in case the marker is no longer detected.
+            # This could be an interesting idea to study to see if it makes
+            # pedagogical differences
+            marker_id_pose_dict = {}
+
             if self.capture.isOpened():
                 self.status, self.img_raw = self.capture.read()
                 self.undistorted_img = cv2.undistort(
@@ -113,14 +120,12 @@ class VideoStreamWidget(object):
                     # If frame is read correctly and we have detected some ids
                     if self.status != 0 and detected_aruco_ids is not None:
                         # Draw the markers onto the image (axis on image)
-                        self.image_with_aruco = aruco.drawDetectedMarkers(
-                            self.image,
+                        self.undistorted_img = aruco.drawDetectedMarkers(
+                            self.undistorted_img,
                             corners,
                             detected_aruco_ids,
                             (0,255,0)
                         )
-
-                        marker_id_pose_dict = {}
 
                         # Go through the detected aruco_ids and assign their
                         # rvec, tvec as a dictionary.
@@ -128,27 +133,25 @@ class VideoStreamWidget(object):
                         # MocapSystem can aggregate across all VideoStreams
                         # to prep for JSON Transfer
                         for i, aruco_id in enumerate(detected_aruco_ids):
-                            if aruco_id[0] in marker_id_pose_dict.keys():
-                                marker_id_pose_dict[aruco_id[0]]["rvec"] = (
-                                    rvecs[i].tolist()
-                                )
-                                marker_id_pose_dict[aruco_id[0]]["tvec"] = (
-                                tvecs[i].tolist()
-                                )
-                            else:
-                                rvec_world, tvec_world = transform_to_world(
-                                    key,rvecs[i][0],
-                                    tvecs[i][0]
-                                )
-                                marker_id_pose_dict[aruco_id[0]] = {
-                                    "rvec": rvec_world,
-                                    "tvec": tvec_world
-                                }
-                        # Completely update these: if the aruco marker is no
-                        # longer detected, we should not keep track of their
-                        # old position anymore.
-                        self.detected_aruco_ids_dict[key] = marker_id_pose_dict
+                            # Putting [0] here assumes that we only have one
+                            # of each aruco marker. For my classroom, this
+                            # should be a safe assumption to make.
+                            # i.e. we should see at most 1 unique aruco id
+                            # per camera.
+                            rvec_world, tvec_world = self.transform_to_world(
+                                rvecs[i][0],
+                                tvecs[i][0]
+                            )
+                            marker_id_pose_dict[aruco_id[0]] = {
+                                "rvec": rvec_world,
+                                "tvec": tvec_world
+                            }
 
+            # Depending on the value of keep_old_values, allow for setting the
+            # class variable to empty dictionary
+            # DeMorgan's Law is wack 1/23/22
+            if len(marker_id_pose_dict) != 0 or not keep_old_values:
+                self.detected_aruco_ids_dict = marker_id_pose_dict
 
             time.sleep(0.1)
 

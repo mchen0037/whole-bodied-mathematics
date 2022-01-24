@@ -1,7 +1,12 @@
+import yaml
+import time
+import numpy as np
+
 import cv2
 from cv2 import aruco
-import yaml
-import numpy as np
+
+from threading import Thread
+
 from VideoStreamWidget import VideoStreamWidget
 
 class MocapSystem(object):
@@ -14,13 +19,21 @@ class MocapSystem(object):
         #     "dist_coeff": np.array, the distance coeffs to undistort the image
         #     "new_camera_mtx": np.array, the new camera matrix to undistort img
         # }
-        self.camera_id_meta_dict = {}
+        self.camera_id_meta_dict, self.active_video_streams = self.load_cameras()
+        self.aruco_camera_pose_dict = {}
 
+        self.thread = Thread(target=self.update_detected_markers, args=())
+        self.thread.daemon = True
+        self.thread.start()
+
+    def load_cameras(self):
         # This for loop iterates over 200 cv2 Video Capture Sources
         # Doing this because the webcams aren't correlating with what's in
         # /dev/video/*. The Camera number corresponds to the camera id
         # based on my setup. It's just used for calibration and transformation.
-        for src in range(1, 200):
+        camera_id_meta_dict = {}
+        active_video_streams = []
+        for src in range(0, 2):
             cap = cv2.VideoCapture(src)
             test, frame = cap.read()
             if test:
@@ -64,17 +77,28 @@ class MocapSystem(object):
                 )
                 camera_meta["new_camera_mtx"] = new_camera_mtx
                 camera_meta["roi"] = roi
-                self.camera_id_meta_dict[cam] = camera_meta
+                camera_id_meta_dict[cam] = camera_meta
 
         # After finding all camera matrices, make sure we assert that we have
         # the same amount of real cameras and sources.
-        if len(self.camera_id_meta_dict.keys()) != self.num_cameras:
+        if len(camera_id_meta_dict.keys()) != self.num_cameras:
             raise AssertionError("""
                 Camera Sources and Number of Cameras in System mismatched!
             """)
 
         # All video streams will be appended in a list held in this Class
-        self.active_video_streams = []
-        for key in self.camera_id_meta_dict.keys():
-            v = VideoStreamWidget(key, self.camera_id_meta_dict[key])
-            self.active_video_streams.append(v)
+        for key in camera_id_meta_dict.keys():
+            v = VideoStreamWidget(key, camera_id_meta_dict[key])
+            active_video_streams.append(v)
+
+        return camera_id_meta_dict, active_video_streams
+
+    def update_detected_markers(self):
+        while True:
+            for v in self.active_video_streams:
+                # TODO: Aggregate the aruco ids detected from each camera and
+                # change the data structure to id->camera->rvec,tvec
+                pass
+
+
+            time.sleep(0.1)
