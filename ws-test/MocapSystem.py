@@ -33,7 +33,7 @@ class MocapSystem(object):
         # based on my setup. It's just used for calibration and transformation.
         camera_id_meta_dict = {}
         active_video_streams = []
-        for src in range(0, 2):
+        for src in range(1, 100):
             cap = cv2.VideoCapture(src)
             test, frame = cap.read()
             if test:
@@ -109,13 +109,15 @@ class MocapSystem(object):
                 # change the data structure to id->camera->rvec,tvec
                 for aruco_id in v.detected_aruco_ids_dict.keys():
                     if aruco_id in aruco_pose_dict:
+                        print(aruco_pose_dict)
+                        print(aruco_id)
                         rvec_arr = v.detected_aruco_ids_dict[aruco_id]["rvec"]
                         tvec_arr = v.detected_aruco_ids_dict[aruco_id]["tvec"]
-                        aruco_pose_dict[aruco_id] = np.append(
-                            rvec_arr, aruco_pose_dict["rvec"]
+                        aruco_pose_dict[aruco_id]["rvec"] = np.append(
+                            rvec_arr, aruco_pose_dict[aruco_id]["rvec"]
                         )
-                        aruco_pose_dict[aruco_id] = np.append(
-                            tvec_arr, aruco_pose_dict["tvec"]
+                        aruco_pose_dict[aruco_id]["tvec"] = np.append(
+                            tvec_arr, aruco_pose_dict[aruco_id]["tvec"]
                         )
                     else:
                         aruco_pose_dict[aruco_id] = (

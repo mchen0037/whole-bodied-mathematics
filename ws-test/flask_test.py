@@ -20,6 +20,7 @@ def hello_world():
 
 @sock.route("/echo")
 def echo(sock):
+    print("Connected!")
     # update these with student points from webcam
     p_0 = {"x":0,"y":0}
     p_1 = {"x":1,"y":1}
@@ -60,6 +61,6 @@ def teardown(exception):
     print(exception)
 
 if __name__ == "__main__":
-    m = MocapSystem(1)
+    m = MocapSystem(2)
     # os.system('clear')
     app.run()
