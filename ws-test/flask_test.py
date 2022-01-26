@@ -4,6 +4,7 @@ from VideoStreamWidget import VideoStreamWidget
 from flask_sock import Sock
 import cv2, time
 import os
+import json
 
 app = Flask(__name__)
 sock = Sock(app)
@@ -61,6 +62,6 @@ def teardown(exception):
     print(exception)
 
 if __name__ == "__main__":
-    m = MocapSystem(2)
+    m = MocapSystem(1)
     # os.system('clear')
     app.run()

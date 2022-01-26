@@ -29,7 +29,7 @@ class VideoStreamWidget(object):
 
         # {
         #     1: { # these are the aruco id value
-        #        "camera_id": int the camera_id  
+        #        "camera_id": int the camera_id
         #        "rvec": np.array(3,1) # rotation vector
         #        "tvec": np.array(3,1) # translation vector
         #     }
@@ -41,6 +41,7 @@ class VideoStreamWidget(object):
         self.thread.start()
 
     def transform_to_world(self, rvec, tvec):
+        # TODO: These should also be moved to an external file.
         # TODO: Take in current rvec, tvec of camera, and camera_id
         # and apply the appropriate matrix multiplication.
         # then, return the rvec, tvec of the marker in the world.
@@ -58,24 +59,36 @@ class VideoStreamWidget(object):
         # TODO: Refactor this to work into files as well, rather than hard-coding it in here.
         # TODO: cameras 2, 3, 4.
         #   Camera 2 and 3 have data collected already, 4 needs measurements
+        CAM_MAT = None
         if self.id == 1:
             # Camera Matrices are calculated through test_icp.jl
-            CAM_1_MAT = np.array([
+            CAM_MAT = np.array([
                 0.10843942862049338, 0.9831140893315748, -0.1474027736449005, -255.61978107664206,
                 -0.899344321905764, 0.03383852478766258, -0.4359297476613141, 46.022855915803895,
                 -0.4235807844748427, 0.17983782026577055, 0.8878275043192422, 17.80489732664515,
                 0.0, 0.0, 0.0, 1.0]
             ).reshape(4,4)
-            CAM_1_ROT_MAT = CAM_1_MAT[:,0:3][0:3]
-            CAM_1_TRA_MAT = CAM_1_MAT[:,3][0:3]
-            new_tvec = CAM_1_ROT_MAT @ tvec + CAM_1_TRA_MAT
         elif self.id == 2:
-            pass
+            CAM_MAT = np.array([
+                -0.7864529749809144, 0.5746331416772751, 0.2264695799213973, -70.99146586565733,
+                0.0820968809519782, 0.4606632412057913, -0.883770038154571, 90.74124962311619,
+                -0.6121697642661112, -0.6764511295636071, -0.40946556513398547, 102.83877695747266,
+                0.0, 0.0, 0.0, 1.0]
+            ).reshape(4,4)
         elif self.id == 3:
-            pass
+            CAM_MAT = np.array([
+                -0.9638100398727747, 0.26432766377635747, 0.03465679158510404, 72.76692121846743,
+                -0.09259124459007201, -0.20999944619257938, -0.9733072968102474, 98.58049098021205,
+                -0.24999413686265098, -0.9412922600135107, 0.22687400197676955, 74.28570741386422,
+                0.0, 0.0, 0.0, 1.0]
+            ).reshape(4,4)
         elif self.id == 4:
             pass
-        return rvec, tvec
+            
+        CAM_ROT_MAT = CAM_MAT[:,0:3][0:3]
+        CAM_TRA_MAT = CAM_MAT[:,3][0:3]
+        new_tvec = CAM_ROT_MAT @ tvec + CAM_TRA_MAT
+        return rvec, new_tvec
 
     def update(self, keep_old_values=False):
         while True:
@@ -154,6 +167,7 @@ class VideoStreamWidget(object):
             # DeMorgan's Law is wack 1/23/22
             if len(marker_id_pose_dict) != 0 or not keep_old_values:
                 self.detected_aruco_ids_dict = marker_id_pose_dict
+            print(self.detected_aruco_ids_dict)
 
             time.sleep(0.1)
 
