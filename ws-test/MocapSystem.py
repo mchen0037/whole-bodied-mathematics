@@ -8,6 +8,7 @@ from cv2 import aruco
 from threading import Thread
 
 from VideoStreamWidget import VideoStreamWidget
+from PoseQueue import PoseQueue
 
 class MocapSystem(object):
     def __init__(self, NUMBER_OF_CAMERAS_IN_SYSTEM):
@@ -20,7 +21,7 @@ class MocapSystem(object):
         #     "new_camera_mtx": np.array, the new camera matrix to undistort img
         # }
         self.camera_id_meta_dict, self.active_video_streams = self.load_cameras()
-        self.aruco_pose_dict = {}
+        self.aruco_pose_dict = {} # a dictionary of PoseQueues
 
         self.thread = Thread(target=self.update_detected_markers, args=())
         self.thread.daemon = True
@@ -33,7 +34,7 @@ class MocapSystem(object):
         # based on my setup. It's just used for calibration and transformation.
         camera_id_meta_dict = {}
         active_video_streams = []
-        for src in range(1, 100):
+        for src in range(0, 2):
             cap = cv2.VideoCapture(src)
             test, frame = cap.read()
             if test:
@@ -96,6 +97,7 @@ class MocapSystem(object):
     def update_detected_markers(self):
         # Restructure the data so that we can prep for JSON Transfer
         # Iterate through each camera and their detected aruco markers
+        print("Looking for detected Markers!")
         while True:
             # {
             #     1 (aruco id): {
@@ -103,28 +105,34 @@ class MocapSystem(object):
             #         "tvec": np.array(3x,)
             #     }
             # }
-            aruco_pose_dict = {}
+            # aruco_pose_dict = {}
             for v in self.active_video_streams:
                 # TODO: Aggregate the aruco ids detected from each camera and
                 # change the data structure to id->camera->rvec,tvec
                 for aruco_id in v.detected_aruco_ids_dict.keys():
-                    if aruco_id in aruco_pose_dict:
-                        print(aruco_pose_dict)
-                        print(aruco_id)
+                    if aruco_id in self.aruco_pose_dict:
                         rvec_arr = v.detected_aruco_ids_dict[aruco_id]["rvec"]
                         tvec_arr = v.detected_aruco_ids_dict[aruco_id]["tvec"]
-                        aruco_pose_dict[aruco_id]["rvec"] = np.append(
-                            rvec_arr, aruco_pose_dict[aruco_id]["rvec"]
-                        )
-                        aruco_pose_dict[aruco_id]["tvec"] = np.append(
-                            tvec_arr, aruco_pose_dict[aruco_id]["tvec"]
-                        )
+                        self.aruco_pose_dict[aruco_id].push(tvec_arr)
+                        # self.aruco_pose_dict[aruco_id]["rvec"] = np.append(
+                        #     rvec_arr, self.aruco_pose_dict[aruco_id]["rvec"]
+                        # )
+                        # self.aruco_pose_dict[aruco_id]["tvec"] = np.append(
+                        #     tvec_arr, self.aruco_pose_dict[aruco_id]["tvec"]
+                        # )
                     else:
-                        aruco_pose_dict[aruco_id] = (
-                            v.detected_aruco_ids_dict[aruco_id]
+                        self.aruco_pose_dict[aruco_id] = PoseQueue(
+                            aruco_id,
+                            v.detected_aruco_ids_dict[aruco_id]["tvec"]
                         )
+                        # aruco_pose_dict[aruco_id] = (
+                        #     v.detected_aruco_ids_dict[aruco_id]
+                        # )
+                        pass
 
-            self.aruco_pose_dict = aruco_pose_dict
+            # self.aruco_pose_dict = aruco_pose_dict
+            if self.aruco_pose_dict:
+                print(self.aruco_pose_dict[0].get_expected_pose())
             time.sleep(0.1)
 
     def get_average_detected_markers(self):

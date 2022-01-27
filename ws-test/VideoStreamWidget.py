@@ -86,7 +86,8 @@ class VideoStreamWidget(object):
         elif self.id == 4:
             pass
         else:
-            print("something went wrong")
+            # print("something went wrong")
+            return rvec, tvec
 
         CAM_ROT_MAT = CAM_MAT[:,0:3][0:3]
         CAM_TRA_MAT = CAM_MAT[:,3][0:3]
