@@ -1,3 +1,4 @@
+// This was used to test the system with Desmos
 var ws = new WebSocket("ws://localhost:5000/echo");
 var calc = Calc.getState()
 expressions_list = calc.expressions.list;
