@@ -42,15 +42,15 @@ def echo(sock):
                 point_key = "P_{" + str(aruco_marker) + "}"
                 if point_key in data.keys():
                     data[point_key]["x"] = (
-                        avg_aruco_poses_dict[aruco_marker]["tvec"][0]
+                        avg_aruco_poses_dict[aruco_marker][0]
                     )
                     data[point_key]["y"] = (
-                        avg_aruco_poses_dict[aruco_marker]["tvec"][1]
+                        avg_aruco_poses_dict[aruco_marker][1]
                     )
                 else:
                     data[point_key] = {
-                        "x": avg_aruco_poses_dict[aruco_marker]["tvec"][0],
-                        "y": avg_aruco_poses_dict[aruco_marker]["tvec"][1]
+                        "x": avg_aruco_poses_dict[aruco_marker][0],
+                        "y": avg_aruco_poses_dict[aruco_marker][1]
                     }
 
         time.sleep(0.1)

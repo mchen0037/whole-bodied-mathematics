@@ -99,16 +99,8 @@ class MocapSystem(object):
         # Iterate through each camera and their detected aruco markers
         print("Looking for detected Markers!")
         while True:
-            # {
-            #     1 (aruco id): {
-            #         "rvec": np.array(3x,),
-            #         "tvec": np.array(3x,)
-            #     }
-            # }
-            # aruco_pose_dict = {}
+
             for v in self.active_video_streams:
-                # TODO: Aggregate the aruco ids detected from each camera and
-                # change the data structure to id->camera->rvec,tvec
                 for aruco_id in v.detected_aruco_ids_dict.keys():
                     if aruco_id in self.aruco_pose_dict:
                         rvec_arr = v.detected_aruco_ids_dict[aruco_id]["rvec"]
@@ -125,38 +117,19 @@ class MocapSystem(object):
                             aruco_id,
                             v.detected_aruco_ids_dict[aruco_id]["tvec"]
                         )
-                        # aruco_pose_dict[aruco_id] = (
-                        #     v.detected_aruco_ids_dict[aruco_id]
-                        # )
-                        pass
 
-            # self.aruco_pose_dict = aruco_pose_dict
-            if self.aruco_pose_dict:
-                print(self.aruco_pose_dict[0].get_expected_pose())
             time.sleep(0.1)
 
     def get_average_detected_markers(self):
-        # Calculates the average of the detected markers and returns
-        # a singular list for each aruco_id
-        # Take the average across all aruco markers detected
-        avg_aruco_poses_dict = {}
-        for aruco_marker in self.aruco_pose_dict:
-            vec_len = self.aruco_pose_dict[aruco_marker]['tvec'].shape[0]
-            reshaped_rvec = (
-                self.aruco_pose_dict[aruco_marker]['rvec'].reshape(
-                    vec_len // 3, 3
-                )
+        # Grabs the expected position from each PoseQueue for each aruco id
+        # And returns it for JSON transfer
+        expected_aruco_poses_dict = {}
+        for aruco_id in self.aruco_pose_dict:
+            expected_aruco_poses_dict[aruco_id] = (
+                self.aruco_pose_dict[aruco_id].get_expected_pose()
             )
-            reshaped_tvec = (
-                self.aruco_pose_dict[aruco_marker]['tvec'].reshape(
-                    vec_len // 3, 3
-                )
-            )
-            avg_aruco_poses_dict[aruco_marker] = {
-                "rvec": np.mean(reshaped_rvec, axis=0),
-                "tvec": np.mean(reshaped_tvec, axis=0)
-            }
-        return avg_aruco_poses_dict
+
+        return expected_aruco_poses_dict
 
 
 
