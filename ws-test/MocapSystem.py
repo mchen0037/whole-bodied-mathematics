@@ -40,7 +40,7 @@ class MocapSystem(object):
                 camera_meta = {}
                 print("cv2 Camera Source", src, "found.")
                 cam = input("Which Camera number?  ")
-                camera_meta["src"] = src
+                camera_meta["src"] = int(src)
 
                 # Get the information from calibration matrices
                 # Put the matrix in camera_id_meta_dict
@@ -77,7 +77,7 @@ class MocapSystem(object):
                 )
                 camera_meta["new_camera_mtx"] = new_camera_mtx
                 camera_meta["roi"] = roi
-                camera_id_meta_dict[cam] = camera_meta
+                camera_id_meta_dict[int(cam)] = camera_meta
 
         # After finding all camera matrices, make sure we assert that we have
         # the same amount of real cameras and sources.

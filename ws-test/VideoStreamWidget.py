@@ -2,6 +2,7 @@ from threading import Thread
 
 import cv2
 import time
+import numpy as np
 from cv2 import aruco
 
 MARKER_LENGTH = 3.5
@@ -84,7 +85,9 @@ class VideoStreamWidget(object):
             ).reshape(4,4)
         elif self.id == 4:
             pass
-            
+        else:
+            print("something went wrong")
+
         CAM_ROT_MAT = CAM_MAT[:,0:3][0:3]
         CAM_TRA_MAT = CAM_MAT[:,3][0:3]
         new_tvec = CAM_ROT_MAT @ tvec + CAM_TRA_MAT
@@ -167,7 +170,7 @@ class VideoStreamWidget(object):
             # DeMorgan's Law is wack 1/23/22
             if len(marker_id_pose_dict) != 0 or not keep_old_values:
                 self.detected_aruco_ids_dict = marker_id_pose_dict
-            print(self.detected_aruco_ids_dict)
+            # print(self.detected_aruco_ids_dict)
 
             time.sleep(0.1)
 
