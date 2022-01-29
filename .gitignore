@@ -2,3 +2,4 @@ mocap/
 camera_calibration_aruco/aruco_data/
 camera_calibration_checker/data/
 */__pycache__
+*.jpg

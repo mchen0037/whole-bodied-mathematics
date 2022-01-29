@@ -34,7 +34,7 @@ class MocapSystem(object):
         # based on my setup. It's just used for calibration and transformation.
         camera_id_meta_dict = {}
         active_video_streams = []
-        for src in range(0, 2):
+        for src in range(1, 100):
             cap = cv2.VideoCapture(src)
             test, frame = cap.read()
             if test:

@@ -5,13 +5,13 @@ import time
 import numpy as np
 from cv2 import aruco
 
-MARKER_LENGTH = 3.5
+MARKER_LENGTH = 18 # cm
 ARUCO_DICT = aruco.getPredefinedDictionary(aruco.DICT_6X6_1000)
 ARUCO_PARAMS = aruco.DetectorParameters_create()
 
 class VideoStreamWidget(object):
     def __init__ (self, id, camera_meta):
-        self.id = id
+        self.id = id # camera id
         # {
         #     "src": int, the cv2.VideoCapture(#)
         #     "mtx": np.array, the camera matrix to undistort the image
@@ -40,6 +40,25 @@ class VideoStreamWidget(object):
         self.thread = Thread(target=self.update, args=())
         self.thread.daemon = True
         self.thread.start()
+
+    def save_image(self, file_path, type="RAW"):
+        img_to_save = None
+        if type == "RAW":
+            img_to_save = self.img_raw
+        elif type == "GRAY":
+            img_to_save = self.img_gray
+        elif type == "ARUCO":
+            img_to_save = self.img_with_aruco
+        else:
+            print("Something went wrong in VideoStreamWidget.py save_image()")
+
+        if img_to_save is not None:
+            cv2.imwrite(file_path, img_to_save)
+            print("Saved an image to", file_path)
+            return 1
+
+        return 0
+
 
     def transform_to_world(self, rvec, tvec):
         # TODO: These should also be moved to an external file.
@@ -78,13 +97,34 @@ class VideoStreamWidget(object):
             ).reshape(4,4)
         elif self.id == 3:
             CAM_MAT = np.array([
-                -0.9638100398727747, 0.26432766377635747, 0.03465679158510404, 72.76692121846743,
-                -0.09259124459007201, -0.20999944619257938, -0.9733072968102474, 98.58049098021205,
-                -0.24999413686265098, -0.9412922600135107, 0.22687400197676955, 74.28570741386422,
-                0.0, 0.0, 0.0, 1.0]
-            ).reshape(4,4)
+                -0.9487645098412019, -0.04548253057871292, -0.3126935309179588, 115.9785627659456,
+                0.2616626763500245, 0.44167241361887916, -0.8581713831475716, 258.1157412130953,
+                0.17713991269933027, -0.8960227778690842, -0.4071420303390986, 172.39425271548947,
+                0.0, 0.0, 0.0, 1.0
+            ]).reshape(4,4)
+
+            # old, mismatched units
+            # CAM_MAT = np.array([
+            #     -0.951110171162794, -0.04000357800234343, -0.30625015274721296, 110.03793333231391,
+            #     0.25817839013084426, 0.4412342508698115, -0.8594511357423422, 120.90865362195517,
+            #     0.1695091772740533, -0.8964998882355573, -0.40933432449955487, 101.7500218297974,
+            #     0.0, 0.0, 0.0, 1.0
+            # ]).reshape(4,4)
         elif self.id == 4:
-            pass
+            CAM_MAT = np.array([
+                -0.9904820760413896, 0.04361848519072557, -0.1305476341815731, 205.97315138606052,
+                0.13757640506734065, 0.3429601618067254, -0.9292206735658933, 261.2412954697548,
+                0.004241439553547541, -0.9383366960548712, -0.34569676745283917, 162.44315961179726,
+                0.0, 0.0, 0.0, 1.0
+            ]).reshape(4,4)
+            # old, mismatched units
+            # CAM_MAT = np.array([
+            #     -0.990255910433522, 0.013272229771779165, -0.13862568221062632, 193.0783870968845,
+            #     0.13230971397662297, 0.4002103719494545, -0.9068218114775931, 120.30844348729131,
+            #     0.04344388839527001, -0.9163271828888219, -0.3980667311646817, 100.22839107810145,
+            #     0.0, 0.0, 0.0, 1.0
+            # ]).reshape(4,4)
+            return rvec, tvec
         else:
             # print("something went wrong")
             return rvec, tvec

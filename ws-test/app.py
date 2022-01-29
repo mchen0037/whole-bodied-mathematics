@@ -62,6 +62,6 @@ def teardown(exception):
     print(exception)
 
 if __name__ == "__main__":
-    m = MocapSystem(1)
+    m = MocapSystem(2)
     # os.system('clear')
     app.run()

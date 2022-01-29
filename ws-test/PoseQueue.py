@@ -4,7 +4,7 @@ class PoseQueue(object):
     def __init__(self, aruco_id, tvec):
 
         self.aruco_id = aruco_id
-        self.MAX_QUEUE_LENGTH = 20
+        self.MAX_QUEUE_LENGTH = 50
         self.length = 1
 
         # So we don't get any 0 errors, make sure we put in a dummy value
@@ -35,7 +35,7 @@ class PoseQueue(object):
         # best I got
         # https://www.desmos.com/calculator/fwrz2lwttq
         # This is based on a max_queue_length of 20, will break otherwise
-        a_1 = ((-1 * 0.85 / 19) * (self.length - 1)) + 1
+        a_1 = ((-1 * 0.95 / (self.MAX_QUEUE_LENGTH - 1)) * (self.length - 1)) + 1
         r = 1 - a_1
         sum_prob = 0
         expected_pose = None
@@ -50,4 +50,5 @@ class PoseQueue(object):
                 expected_pose = (
                     expected_pose + prob * self.pose_history[idx]["tvec"]
                 )
+        print(expected_pose)
         return expected_pose
