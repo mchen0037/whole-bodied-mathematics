@@ -11,6 +11,7 @@ from utils.constants import constants as C
 camera_id = 1
 
 READ_PATH = "camera_world_calibration/callibration_transformation_data_images/camera_" + str(camera_id) + "/"
+SAVE_PATH = "camera_world_calibration/camera_" + str(camera_id) + "_data.csv"
 print(READ_PATH)
 
 camera_meta = {}
@@ -32,7 +33,6 @@ camera_meta["roi"] = roi
 
 
 def save_row(real_x, real_y, real_z, detected_x, detected_y, detected_z):
-    SAVE_PATH = "camera_transformation_data/camera_" + str(camera_id) + "/data.csv"
     row = [real_x, real_y, real_z, detected_x, detected_y, detected_z]
     with open(SAVE_PATH, "a") as f:
         row = ( str(real_x) + "," +
