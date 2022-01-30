@@ -11,9 +11,9 @@ The Client side, [currently using GeoGebra](https://www.geogebra.org/m/qzn6g9ju)
 Most code is written in `utils` folder, under `MocapSystem.py` and `VideoStreamWidget.py`.
 
 ## TODO
-[] Extend `VideoStreamWidget.py` to have a data collection mode which saves video as the system is running
-[] Extend `MocapSystem.py` to have a data collection mode which saves (x,y) positions as the system is running
-[] Extend `/show_frames` endpoint in `app.py` to have a front end view of the video stream
-[] Multi-camera calibration for improved accuracy
-[] Improved README and include more pictures
-[] Website explaining project
+- [ ] Extend `VideoStreamWidget.py` to have a data collection mode which saves video as the system is running
+- [ ] Extend `MocapSystem.py` to have a data collection mode which saves (x,y) positions as the system is running
+- [ ] Extend `/show_frames` endpoint in `app.py` to have a front end view of the video stream
+- [ ] Multi-camera calibration for improved accuracy
+- [ ] Improved README and include more pictures
+- [ ] Website explaining project
