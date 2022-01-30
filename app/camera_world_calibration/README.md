@@ -20,7 +20,7 @@ Note to self: I originally planned on taking an image for every increment of 50c
 * `generate_marker_data.py` looks through the images collected from the file above and scans to see if we can find any AruCo markers. If it can, then we find the estimated position and create `camera_n_data.csv`. This is a CSV file which maps a real world position to the intrinsic position.
 
 ## 3. Run a Regression
-* [Guoxiang](https://www.github.com/gzhang8)'s `Posegraph.jl` package calculates this for us quickly.
+* [Guoxiang](https://www.github.com/gzhang8)'s `Posegraph.jl` package calculates this for us quickly. [Posegraph.jl](https://github.com/gzhang8/Posegraph.jl) calculates the transformation matrix and is dependent on [Ceres.jl](https://github.com/gzhang8/Ceres.jl). These run on julia-1.6.3
 * TODO: Rewrite this in Python or figure out how to write Julia
 * Run `generate_icp_jl.py` to generate a Julia file which will calculate a matrix for us to multiple to translate between intrinsic and extrinsic coordinates.
 * This matrix will be placed in the [Constants file](https://github.com/mchen0037/whole-bodied-mathematics/blob/main/app/utils/constants/constants.py).
