@@ -8,7 +8,7 @@
 
 ## 1. Collect several samples
 
-<center>![Collecting Data](https://github.com/mchen0037/whole-bodied-mathematics/blob/main/assets/collecting_data.gif?raw=true)</center>
+![Collecting Data](https://github.com/mchen0037/whole-bodied-mathematics/blob/main/assets/collecting_data.gif?raw=true)
 
 After multiple horrendous hours of collecting a few data points by surveying using string and a digital protractor, the idea to just tapethe ground in increments of 100 cmand use those as data points came into my head. This process takes about a total of about 2 hours, as opposed to 2 hours per camera.
 
