@@ -51,7 +51,7 @@ with open(READ_PATH + "image_mappings.csv") as csvfile:
     # This clears the file and then regenerates the file
     with open(SAVE_PATH, "w") as f:
         f.write(
-            "real_x, real_y, real_z, detected_x, detected_y, detected_z"
+            "real_x, real_y, real_z, detected_x, detected_y, detected_z\n"
         )
     f.close()
     for idx, row in enumerate(reader):
