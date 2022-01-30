@@ -7,7 +7,9 @@
 * *Extrinsic*: The `[x, y, z]` coordinates based in the world. We need to calculate this based on some matrix multiplications. This repository collects data so that we can use a multi-dimensional regression to find the `m` and `b` in `y = mx + b`
 
 ## 1. Collect several samples
-![Collecting Data](https://github.com/mchen0037/whole-bodied-mathematics/blob/main/assets/collecting_data.gif?raw=true)
+
+<center>![Collecting Data](https://github.com/mchen0037/whole-bodied-mathematics/blob/main/assets/collecting_data.gif?raw=true)</center>
+
 After multiple horrendous hours of collecting a few data points by surveying using string and a digital protractor, the idea to just tapethe ground in increments of 100 cmand use those as data points came into my head. This process takes about a total of about 2 hours, as opposed to 2 hours per camera.
 
 * `collect_pictures.py` will take pictures of all cameras and save them into `/images`, whether it sees an aruco marker or not. (this might also be useful for multi-camera calibration in continued development)
