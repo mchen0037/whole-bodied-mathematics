@@ -1,10 +1,9 @@
 import csv
 
-data_path = "data_4.csv"
+camera_id = 1
 
-icp_id = 4
-
-julia_file = open(str(icp_id) + ".jl", "w")
+data_path = "camera_" + str(camera_id) + "data.csv"
+julia_file = open(str(camera_id) + ".jl", "w")
 
 julia_file.write("import Rotations\n")
 julia_file.write("import LinearAlgebra\n")
@@ -66,4 +65,3 @@ julia_file.write("println(T)\n")
             #     str(data_row[4]) + "," +
             #     str(data_row[5]) + "]"
             # )
-
