@@ -1,3 +1,0 @@
-[submodule "camera_callibration"]
-	path = camera_callibration_aruco
-	url = https://github.com/abakisita/camera_calibration
