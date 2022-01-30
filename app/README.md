@@ -6,7 +6,7 @@ This creates a web server which will start the motion capture system and then ha
 
 The Client side, [currently using GeoGebra](https://www.geogebra.org/m/qzn6g9ju) will take in these positions as x, y coordinates and then plot those points.
 
-![Image of using System](#)
+![Image of using System](https://github.com/mchen0037/whole-bodied-mathematics/blob/main/assets/app_example.gif?raw=true)
 
 Most code is written in `utils` folder, under `MocapSystem.py` and `VideoStreamWidget.py`.
 
