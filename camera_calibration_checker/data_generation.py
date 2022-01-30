@@ -10,7 +10,7 @@ import cv2
 camera = cv2.VideoCapture(4)
 ret, img = camera.read()
 
-
+# Change this
 path = "/home/mighty/repos/mocap-desmos/camera_calibration_checker/data/camera_4/"
 count = 0
 while True:
