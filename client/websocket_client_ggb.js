@@ -1,3 +1,4 @@
+// This code is run on the client end
 var ws = new WebSocket("ws://localhost:5000/echo");
 var app = ggbApplet;
 
