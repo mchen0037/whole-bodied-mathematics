@@ -3,3 +3,4 @@ camera_calibration_aruco/aruco_data/
 camera_calibration_checker/data/
 __pycache__/
 *.pyc
+camera_world_calibration/collected_data_from_cameras/video/

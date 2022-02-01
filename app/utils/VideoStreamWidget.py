@@ -6,7 +6,7 @@ from cv2 import aruco
 
 from threading import Thread
 
-from .constants import constants
+from .constants import constants as C
 
 class VideoStreamWidget(object):
     def __init__ (self, id, camera_meta):
@@ -16,6 +16,7 @@ class VideoStreamWidget(object):
         #     "mtx": np.array, the camera matrix to undistort the image
         #     "dist_coeff": np.array, the distance coeffs to undistort the image
         #     "new_camera_mtx": np.array, the new camera matrix to undistort img
+        #     "save_video" : bool, if we should save video or not
         # }
         self.camera_meta = camera_meta # meta info (see MocapSystem)
         self.src = camera_meta["src"] # cv2 camera source id
@@ -83,6 +84,8 @@ class VideoStreamWidget(object):
 
             if self.capture.isOpened():
                 self.status, self.img_raw = self.capture.read()
+                if self.status and self.camera_meta["save_video"]:
+                    print(C.SAVE_VIDEO_STREAM_FILE_PATH)
                 self.undistorted_img = cv2.undistort(
                     self.img_raw,
                     self.camera_meta["mtx"],
