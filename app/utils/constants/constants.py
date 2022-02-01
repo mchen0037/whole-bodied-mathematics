@@ -1,8 +1,11 @@
 import numpy as np
 from cv2 import aruco
 
-SAVE_VIDEO_STREAM_FILE_PATH = "/collected_data_from_cameras/video/"
-SAVE_POSE_HISTORY_FILE_PATH = "/collected_data_from_cameras/pose_history/"
+SAVE_VIDEO_STREAM_FILE_PATH = "collected_data_from_cameras/video/"
+SAVE_POSE_HISTORY_FILE_PATH = "collected_data_from_cameras/pose_history/"
+
+# 640 x 480 pixels
+WEBCAM_FRAME_SIZE = (640, 480)
 
 # These are the calibration we get by taking several pictures of the checkerboard.
 # These need to be changed if you swap out the type of camera.

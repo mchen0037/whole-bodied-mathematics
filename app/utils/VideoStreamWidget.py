@@ -1,5 +1,6 @@
 import time
 import numpy as np
+import datetime
 
 import cv2
 from cv2 import aruco
@@ -27,6 +28,30 @@ class VideoStreamWidget(object):
         self.img_gray = None # img_gray is undistorted
         self.undistorted_img = None # If use_roi is True, crop the img
         self.img_with_aruco = None
+
+        if self.camera_meta["save_video"]:
+            current_datetime = datetime.datetime.now()
+            current_year = current_datetime.year
+            current_month = current_datetime.month
+            current_day = current_datetime.day
+            current_hour = current_datetime.hour
+            current_minute = current_datetime.minute
+            video_file_name = (C.SAVE_VIDEO_STREAM_FILE_PATH +
+                str(current_year) + "_" +
+                str(current_month) + "_" +
+                str(current_day) + "_" +
+                str(current_hour) + "_" +
+                str(current_minute) + "_camera_" +
+                str(self.id) + ".avi"
+            )
+            print(video_file_name)
+            self.video_result = cv2.VideoWriter(video_file_name,
+                cv2.VideoWriter_fourcc(*'MJPG'),
+                30, #fps TODO: Test this
+                C.WEBCAM_FRAME_SIZE
+            )
+        else:
+            self.video_result = None
 
         # {
         #     1: { # these are the aruco id value
@@ -84,8 +109,12 @@ class VideoStreamWidget(object):
 
             if self.capture.isOpened():
                 self.status, self.img_raw = self.capture.read()
+
+                # Saving video stream for data collection
                 if self.status and self.camera_meta["save_video"]:
-                    print(C.SAVE_VIDEO_STREAM_FILE_PATH)
+                    self.video_result.write(self.img_raw)
+
+                # undistort the image using the pre-loaded calibration file
                 self.undistorted_img = cv2.undistort(
                     self.img_raw,
                     self.camera_meta["mtx"],
@@ -93,6 +122,8 @@ class VideoStreamWidget(object):
                     None,
                     self.camera_meta["new_camera_mtx"]
                 )
+
+                # region of interest
                 if self.use_roi == True:
                     x, y, w, h = self.camera_meta['roi']
                     self.undistorted_img = self.undistorted_img[y:y+h, x:x+w]
@@ -108,7 +139,8 @@ class VideoStreamWidget(object):
                 if len(corners) != 0:
                     # estimate the position of aruco markers in the image frame
                     # https://docs.opencv.org/4.5.3/d9/d6a/group__aruco.html#ga84dd2e88f3e8c3255eb78e0f79571bd1
-                    # this returns a list of rotation vectors and a list of translation vectors of where each id is located.
+                    # this returns a list of rotation vectors and a list of
+                    # translation vectors of where each id is located.
                     rvecs, tvecs, _objPoints = aruco.estimatePoseSingleMarkers(
                         corners,
                         C.MARKER_LENGTH,

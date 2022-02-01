@@ -97,7 +97,7 @@ class MocapSystem(object):
                             v.detected_aruco_ids_dict[aruco_id]["tvec"]
                         )
 
-            time.sleep(0.1)
+            time.sleep(1 / 30)
 
     def get_average_detected_markers(self):
         # Grabs the expected position from each PoseQueue for each aruco id
