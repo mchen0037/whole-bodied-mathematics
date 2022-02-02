@@ -12,8 +12,9 @@ from .VideoStreamWidget import VideoStreamWidget
 from .PoseQueue import PoseQueue
 
 class MocapSystem(object):
-    def __init__(self, NUMBER_OF_CAMERAS_IN_SYSTEM):
+    def __init__(self, NUMBER_OF_CAMERAS_IN_SYSTEM, SAVE_VIDEO):
         self.num_cameras = NUMBER_OF_CAMERAS_IN_SYSTEM
+        self.save_video = SAVE_VIDEO
         # for each camera camera_id_meta_dict carries data on:
         # "1": {
         #     "src": int, the cv2.VideoCapture(#)
@@ -21,8 +22,8 @@ class MocapSystem(object):
         #     "dist_coeff": np.array, the distance coeffs to undistort the image
         #     "new_camera_mtx": np.array, the new camera matrix to undistort img
         # }
-        self.camera_id_meta_dict, self.active_video_streams = self.load_cameras()
         self.aruco_pose_dict = {} # a dictionary of PoseQueues
+        self.camera_id_meta_dict, self.active_video_streams = self.load_cameras()
 
         self.thread = Thread(target=self.update_detected_markers, args=())
         self.thread.daemon = True
@@ -60,6 +61,7 @@ class MocapSystem(object):
                 )
                 camera_meta["new_camera_mtx"] = new_camera_mtx
                 camera_meta["roi"] = roi
+                camera_meta["save_video"] = self.save_video
                 camera_id_meta_dict[int(cam)] = camera_meta
 
         # After finding all camera matrices, make sure we assert that we have
@@ -95,7 +97,7 @@ class MocapSystem(object):
                             v.detected_aruco_ids_dict[aruco_id]["tvec"]
                         )
 
-            time.sleep(0.1)
+            time.sleep(1 / 30)
 
     def get_average_detected_markers(self):
         # Grabs the expected position from each PoseQueue for each aruco id
