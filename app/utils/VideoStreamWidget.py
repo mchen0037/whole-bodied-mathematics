@@ -52,6 +52,9 @@ class VideoStreamWidget(object):
 
             video_file_name = (C.SAVE_VIDEO_STREAM_FILE_PATH +
                 YY_MM_DD_FOLDER +
+                str(current_year) + "_" +
+                str(current_month) + "_" +
+                str(current_day) + "_" + 
                 str(current_hour) + "_" +
                 str(current_minute) + "_camera_" +
                 str(self.id) + ".avi"
