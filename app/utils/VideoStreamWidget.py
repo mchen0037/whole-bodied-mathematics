@@ -1,6 +1,7 @@
 import time
 import numpy as np
 import datetime
+import os
 
 import cv2
 from cv2 import aruco
@@ -36,10 +37,21 @@ class VideoStreamWidget(object):
             current_day = current_datetime.day
             current_hour = current_datetime.hour
             current_minute = current_datetime.minute
-            video_file_name = (C.SAVE_VIDEO_STREAM_FILE_PATH +
+
+            YY_MM_DD_FOLDER = (
                 str(current_year) + "_" +
                 str(current_month) + "_" +
-                str(current_day) + "_" +
+                str(current_day) + "/"
+            )
+
+            try:
+                os.mkdir(C.SAVE_VIDEO_STREAM_FILE_PATH + YY_MM_DD_FOLDER)
+            except OSError as error:
+                print(error)
+                print("Skipping")
+
+            video_file_name = (C.SAVE_VIDEO_STREAM_FILE_PATH +
+                YY_MM_DD_FOLDER +
                 str(current_hour) + "_" +
                 str(current_minute) + "_camera_" +
                 str(self.id) + ".avi"
@@ -89,7 +101,7 @@ class VideoStreamWidget(object):
         # Matrix Multiply to calculate the tvec of where the aruco marker is in
         # the world.
         CAM_MAT = None
-        if self.id in C.CAMERA_EXTRINSIC_MATRIX_DICT.keys:
+        if self.id in C.CAMERA_EXTRINSIC_MATRIX_DICT.keys():
             CAM_MAT = C.CAMERA_EXTRINSIC_MATRIX_DICT[self.id]
         else:
             return rvec, tvec
