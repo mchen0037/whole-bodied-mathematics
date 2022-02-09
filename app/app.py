@@ -27,24 +27,18 @@ def hello_world():
 def echo(sock):
     print("Connected!")
     # update these with student points from webcam
-    p_0 = {"x":0,"y":0}
-    p_1 = {"x":1,"y":1}
-    p_2 = {"x":2,"y":2}
-    p_3 = {"x":3,"y":3}
-    # p_4 = {"x":4,"y":4}
-    l = [p_0, p_1, p_2, p_3]
-    data = {"P_2": p_2}
+    data = {}
     # print(data)
     # res = jsonify([1, 2, 3, 4, 5])
     while True:
         # send the data of the points over the websocket
-        print(data)
+        # print(data)
         sock.send(data)
 
         avg_aruco_poses_dict = m.get_average_detected_markers()
         if avg_aruco_poses_dict:
             for aruco_marker in avg_aruco_poses_dict:
-                point_key = "P_{" + str(aruco_marker) + "}"
+                point_key = str(aruco_marker)
                 if point_key in data.keys():
                     data[point_key]["x"] = (
                         avg_aruco_poses_dict[aruco_marker][0]
@@ -57,6 +51,13 @@ def echo(sock):
                         "x": avg_aruco_poses_dict[aruco_marker][0],
                         "y": avg_aruco_poses_dict[aruco_marker][1]
                     }
+        # print(data)
+        # {
+        #     '2': {'x': 2, 'y': 2},
+        #     '3': {'x': -61.92587027200489, 'y': 141.64982423922115},
+        #     '4': {'x': -112.89539842713651, 'y': 108.76427080426924}
+        # }
+
 
         time.sleep(0.1)
 

@@ -1,13 +1,21 @@
 from utils.VideoStreamWidget import VideoStreamWidget
 from utils.MocapSystem import MocapSystem
 import time
+import os
 
 # I'm taking pictures in every increment of 50 cm..
-m = MocapSystem(4)
-SAVE_PATH = "callibration_transformation_data_images/camera_"
+m = MocapSystem(4, False)
+SAVE_PATH = "camera_world_calibration/images/camera_"
 
 # Change this based on which img num you're capturing
-img_num = 195
+img_num = 25
+# For new files:
+# Need to create a file in collected_data_from_cameras/camera_<id>/image_mappings.csv
+# for v in m.active_video_streams:
+#     os.system("rm " + SAVE_PATH + str(v.id) + "/" + "image_mappings.csv")
+#     f = open(SAVE_PATH + str(v.id) + "/" + "image_mappings.csv", "x")
+#     f.write("file_name, real_x, real_y, real_z\n")
+#     f.close()
 
 def save_images(file_name):
     while True:
@@ -21,7 +29,6 @@ def save_images(file_name):
     return 0
 
 def save_position(x, y, z, file):
-    fields = ["file_name", "real_x", "real_y", "real_z"]
     for v in m.active_video_streams:
         PATH = SAVE_PATH + str(v.id) + "/image_mappings.csv"
         with open(PATH, "a") as f:

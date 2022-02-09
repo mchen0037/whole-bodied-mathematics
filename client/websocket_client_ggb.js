@@ -17,7 +17,8 @@ ws.onmessage = function (evt) {
    keys = Object.keys(parsed)
 
    for (var i = 0; i < keys.length; i++) {
-     app.evalCommand(`${keys[i]}=(${parsed[keys[i]].x},${parsed[keys[i]].y})`)
+     console.log(`P_{${keys[i]}}=(${parsed[keys[i]].x},${parsed[keys[i]].y})`)
+     app.evalCommand(`P_{${keys[i]}}=(${parsed[keys[i]].x},${parsed[keys[i]].y})`)
    }
 };
 

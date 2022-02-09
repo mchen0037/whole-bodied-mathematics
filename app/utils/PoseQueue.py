@@ -50,7 +50,7 @@ class PoseQueue(object):
                 expected_pose = (
                     expected_pose + prob * self.pose_history[idx]["tvec"]
                 )
-        print(expected_pose)
+        # print(expected_pose)
         # print(self.pose_history[0]["tvec"])
         # return self.pose_history[0]["tvec"]
         return expected_pose
