@@ -1,5 +1,7 @@
 import time
+import datetime
 import numpy as np
+import os
 
 import cv2
 from cv2 import aruco
@@ -24,6 +26,8 @@ class MocapSystem(object):
         # }
         self.aruco_pose_dict = {} # a dictionary of PoseQueues
         self.camera_id_meta_dict, self.active_video_streams = self.load_cameras()
+
+        self.pose_history_file_name = self.get_pose_history_file_name()
 
         self.thread = Thread(target=self.update_detected_markers, args=())
         self.thread.daemon = True
@@ -78,6 +82,48 @@ class MocapSystem(object):
 
         return camera_id_meta_dict, active_video_streams
 
+    def get_pose_history_file_name(self):
+        pose_history_file_name = None
+        if self.save_video == True:
+            for v in self.active_video_streams:
+                current_datetime = datetime.datetime.now()
+                current_year = current_datetime.year
+                current_month = current_datetime.month
+                current_day = current_datetime.day
+                current_hour = current_datetime.hour
+                current_minute = current_datetime.minute
+
+                YY_MM_DD_FOLDER = (
+                    str(current_year) + "_" +
+                    str(current_month) + "_" +
+                    str(current_day) + "/"
+                )
+
+                try:
+                    os.mkdir(C.SAVE_POSE_HISTORY_FILE_PATH + YY_MM_DD_FOLDER)
+                except OSError as error:
+                    print(error)
+                    print("Skipping")
+
+                pose_history_file_name = (C.SAVE_POSE_HISTORY_FILE_PATH +
+                    YY_MM_DD_FOLDER +
+                    str(current_year) + "_" +
+                    str(current_month) + "_" +
+                    str(current_day) + "_" +
+                    str(current_hour) + "_" +
+                    str(current_minute) + "_pose_history.csv"
+                )
+                try:
+                    f = open(pose_history_file_name, "x")
+                    f.write("timestamp, id, x, y, z")
+                    f.close()
+                except OSError as error:
+                    print(error)
+                    print("Skipping")
+        else:
+            print("Pose History not being saved.")
+        return pose_history_file_name
+
     def update_detected_markers(self):
         # Restructure the data so that we can prep for JSON Transfer
         # Iterate through each camera and their detected aruco markers
@@ -105,7 +151,10 @@ class MocapSystem(object):
         expected_aruco_poses_dict = {}
         for aruco_id in self.aruco_pose_dict:
             expected_aruco_poses_dict[aruco_id] = (
-                self.aruco_pose_dict[aruco_id].get_expected_pose()
+                self.aruco_pose_dict[aruco_id].get_expected_pose(
+                    save = False,
+                    save_location = self.pose_history_file_name
+                )
             )
 
         return expected_aruco_poses_dict

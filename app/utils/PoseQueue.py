@@ -28,13 +28,14 @@ class PoseQueue(object):
             self.pose_history.append(dat)
             self.length = self.length + 1
 
-    def get_expected_pose(self):
+    def get_expected_pose(self, save=False, save_location=None):
         # Use a geometric which converges to 1 to calculate the probability
         # of each pose based on how old it is.
         # There's probably more advanced math for this but this is the
         # best I got
         # https://www.desmos.com/calculator/fwrz2lwttq
         # This is based on a max_queue_length of 20, will break otherwise
+        # expected pose is [x, y, z]
         a_1 = ((-1 * 0.95 / (self.MAX_QUEUE_LENGTH - 1)) * (self.length - 1)) + 1
         r = 1 - a_1
         sum_prob = 0
@@ -50,7 +51,27 @@ class PoseQueue(object):
                 expected_pose = (
                     expected_pose + prob * self.pose_history[idx]["tvec"]
                 )
-        # print(expected_pose)
-        # print(self.pose_history[0]["tvec"])
-        # return self.pose_history[0]["tvec"]
+        if save == True:
+            if save_location:
+                # try:
+                    # timestamp, id, x, y, z
+                    f = open(save_location, "a")
+                    timestamp = datetime.now().timestamp() * 1000  # in ms
+                    id = self.aruco_id
+                    x = expected_pose[0]
+                    y = expected_pose[1]
+                    z = expected_pose[2]
+                    line = (
+                        str(timestamp) + "," +
+                        str(id) + "," +
+                        str(x) + "," +
+                        str(y) + "," +
+                        str(z) + "\n"
+                    )
+                    f.write(line)
+                    f.close()
+                # except:
+                    # print("Error in saving Pose")
+            # save expected pose
+            pass
         return expected_pose

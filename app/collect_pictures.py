@@ -8,7 +8,7 @@ m = MocapSystem(4, False)
 SAVE_PATH = "camera_world_calibration/images/camera_"
 
 # Change this based on which img num you're capturing
-img_num = 25
+img_num = 97
 # For new files:
 # Need to create a file in collected_data_from_cameras/camera_<id>/image_mappings.csv
 # for v in m.active_video_streams:
@@ -33,9 +33,9 @@ def save_position(x, y, z, file):
         PATH = SAVE_PATH + str(v.id) + "/image_mappings.csv"
         with open(PATH, "a") as f:
             row = (file_name + "," +
-                str(real_x) + "," +
-                str(real_y) + "," +
-                str(real_z) + "\n"
+                str(int(real_x) * 100) + "," +
+                str(int(real_y) * 100) + "," +
+                str(int(real_z) * 100) + "\n"
             )
             f.write(row)
         f.close()
