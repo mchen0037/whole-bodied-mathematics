@@ -68,6 +68,10 @@ def teardown(exception):
     print(exception)
 
 if __name__ == "__main__":
-    m = MocapSystem(4, True)
+    m = MocapSystem(
+        NUMBER_OF_CAMERAS_IN_SYSTEM=4,
+        SAVE_VIDEO = False,
+        OLD_VIDEO_PATH = "collected_data_from_cameras/video/2022_2_10/2022_2_10_15_23_camera_"
+    )
     # os.system('clear')
     app.run()

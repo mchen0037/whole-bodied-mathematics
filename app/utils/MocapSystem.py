@@ -14,9 +14,10 @@ from .VideoStreamWidget import VideoStreamWidget
 from .PoseQueue import PoseQueue
 
 class MocapSystem(object):
-    def __init__(self, NUMBER_OF_CAMERAS_IN_SYSTEM, SAVE_VIDEO):
+    def __init__(self, NUMBER_OF_CAMERAS_IN_SYSTEM, SAVE_VIDEO=False, OLD_VIDEO_PATH=None):
         self.num_cameras = NUMBER_OF_CAMERAS_IN_SYSTEM
         self.save_video = SAVE_VIDEO
+        self.old_video_path = OLD_VIDEO_PATH
         # for each camera camera_id_meta_dict carries data on:
         # "1": {
         #     "src": int, the cv2.VideoCapture(#)
@@ -25,7 +26,17 @@ class MocapSystem(object):
         #     "new_camera_mtx": np.array, the new camera matrix to undistort img
         # }
         self.aruco_pose_dict = {} # a dictionary of PoseQueues
-        self.camera_id_meta_dict, self.active_video_streams = self.load_cameras()
+        self.active_video_streams = []
+        self.camera_id_meta_dict = {}
+
+        if self.old_video_path == None:
+            self.camera_id_meta_dict, self.active_video_streams = (
+                self.load_cameras()
+            )
+        else:
+            self.camera_id_meta_dict, self.active_video_streams = (
+                self.load_video_history()
+            )
 
         self.pose_history_file_name = self.get_pose_history_file_name()
 
@@ -81,6 +92,44 @@ class MocapSystem(object):
             active_video_streams.append(v)
 
         return camera_id_meta_dict, active_video_streams
+
+    def load_video_history(self):
+        camera_id_meta_dict = {}
+        active_video_streams = []
+
+        cap = cv2.VideoCapture(self.old_video_path + "1.avi")
+        test, frame = cap.read()
+
+        for i in range(1, self.num_cameras + 1):
+            camera_meta = {}
+            camera_meta["src"] = self.old_video_path + str(i) + ".avi"
+            print(self.old_video_path + str(i) + ".avi")
+
+            camera_meta["mtx"] = C.CAMERA_CALIBRATION_MATRIX
+            camera_meta["dist_coeff"] = C.CAMERA_CALIBRATION_DISTANCE_COEFF
+
+            # Calculate the Camera Matrix from the yaml fgle
+            img_gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+            h, w = img_gray.shape[:2]
+            # https://docs.opencv.org/3.3.0/d9/d0c/group__calib3d.html#ga7a6c4e032c97f03ba747966e6ad862b1
+            new_camera_mtx, roi = cv2.getOptimalNewCameraMatrix(
+                camera_meta["mtx"],
+                camera_meta["dist_coeff"],
+                (w, h),
+                1,
+                (w, h)
+            )
+            camera_meta["new_camera_mtx"] = new_camera_mtx
+            camera_meta["roi"] = roi
+            camera_meta["save_video"] = False
+            camera_id_meta_dict[i] = camera_meta
+
+        for key in camera_id_meta_dict.keys():
+            v = VideoStreamWidget(key, camera_id_meta_dict[key])
+            active_video_streams.append(v)
+
+        return camera_id_meta_dict, active_video_streams
+
 
     def get_pose_history_file_name(self):
         pose_history_file_name = None
@@ -142,6 +191,8 @@ class MocapSystem(object):
                             aruco_id,
                             v.detected_aruco_ids_dict[aruco_id]["tvec"]
                         )
+                    # if aruco_id == 1:
+                    #     print(v.id, v.detected_aruco_ids_dict[aruco_id]["tvec"])
 
             time.sleep(1 / 30)
 
