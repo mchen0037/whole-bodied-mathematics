@@ -21,7 +21,7 @@ class VideoStreamWidget(object):
         #     "save_video" : bool, if we should save video or not
         # }
         self.camera_meta = camera_meta # meta info (see MocapSystem)
-        self.src = camera_meta["src"] # cv2 camera source id
+        self.src = camera_meta["src"] # cv2 camera source id or video history location
         self.capture = cv2.VideoCapture(self.src)
         self.status = None # Status of the camera
         self.use_roi = True # roi = Region of Interest
@@ -52,6 +52,9 @@ class VideoStreamWidget(object):
 
             video_file_name = (C.SAVE_VIDEO_STREAM_FILE_PATH +
                 YY_MM_DD_FOLDER +
+                str(current_year) + "_" +
+                str(current_month) + "_" +
+                str(current_day) + "_" +
                 str(current_hour) + "_" +
                 str(current_minute) + "_camera_" +
                 str(self.id) + ".avi"
@@ -104,6 +107,7 @@ class VideoStreamWidget(object):
         if self.id in C.CAMERA_EXTRINSIC_MATRIX_DICT.keys():
             CAM_MAT = C.CAMERA_EXTRINSIC_MATRIX_DICT[self.id]
         else:
+            print("WARNING: Camera Matrix not found in Dict. Using camera coordinates.")
             return rvec, tvec
 
         CAM_ROT_MAT = CAM_MAT[:,0:3][0:3]
@@ -197,14 +201,12 @@ class VideoStreamWidget(object):
             # DeMorgan's Law is wack 1/23/22
             if len(marker_id_pose_dict) != 0 or not keep_old_values:
                 self.detected_aruco_ids_dict = marker_id_pose_dict
-            # print(self.detected_aruco_ids_dict)
 
             time.sleep(0.1)
 
     def show_frame(self):
         cv2.imshow("camera " + str(self.id), self.undistorted_img)
-        key = cv2.waitKey(1)
-        if key == ord('q'):
+        if cv2.waitKey(25) & 0xFF == ord('q'):
             self.capture.release()
             cv2.destroyAllWindows()
             exit(1)

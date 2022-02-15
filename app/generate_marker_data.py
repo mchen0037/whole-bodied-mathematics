@@ -8,7 +8,7 @@ import numpy as np
 from utils.constants import constants as C
 
 # Change this as we go through each camera
-camera_id = 1
+camera_id = 4
 
 READ_PATH = "camera_world_calibration/images/camera_" + str(camera_id) + "/"
 SAVE_PATH = "camera_world_calibration/camera_" + str(camera_id) + "_data.csv"

@@ -4,3 +4,4 @@ camera_calibration_checker/data/
 __pycache__/
 *.pyc
 app/collected_data_from_cameras/video/
+*.jpg
