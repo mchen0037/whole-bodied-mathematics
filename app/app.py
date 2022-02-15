@@ -1,6 +1,8 @@
 import os
 import time
 import json
+import argparse
+import sys
 
 import cv2
 
@@ -40,24 +42,32 @@ def echo(sock):
             for aruco_marker in avg_aruco_poses_dict:
                 point_key = str(aruco_marker)
                 if point_key in data.keys():
-                    data[point_key]["x"] = (
-                        avg_aruco_poses_dict[aruco_marker][0]
-                    )
-                    data[point_key]["y"] = (
-                        avg_aruco_poses_dict[aruco_marker][1]
-                    )
-                else:
-                    data[point_key] = {
-                        "x": avg_aruco_poses_dict[aruco_marker][0],
-                        "y": avg_aruco_poses_dict[aruco_marker][1]
-                    }
-        # print(data)
-        # {
-        #     '2': {'x': 2, 'y': 2},
-        #     '3': {'x': -61.92587027200489, 'y': 141.64982423922115},
-        #     '4': {'x': -112.89539842713651, 'y': 108.76427080426924}
-        # }
+                    if m.mode == 0:
+                        data[point_key]["x"] = (
+                            avg_aruco_poses_dict[aruco_marker][0]
+                        )
+                        data[point_key]["y"] = (
+                            avg_aruco_poses_dict[aruco_marker][1]
+                        )
+                    else:
+                        data[point_key]["x"] = (
+                            avg_aruco_poses_dict[aruco_marker][0]
+                        )
+                        data[point_key]["y"] = (
+                            avg_aruco_poses_dict[aruco_marker][2]
+                        )
 
+                else:
+                    if m.mode == 0:
+                        data[point_key] = {
+                            "x": avg_aruco_poses_dict[aruco_marker][0],
+                            "y": avg_aruco_poses_dict[aruco_marker][1]
+                        }
+                    else:
+                        data[point_key] = {
+                            "x": avg_aruco_poses_dict[aruco_marker][0],
+                            "y": avg_aruco_poses_dict[aruco_marker][2]
+                        }
 
         time.sleep(0.1)
 
@@ -68,10 +78,49 @@ def teardown(exception):
     print(exception)
 
 if __name__ == "__main__":
-    m = MocapSystem(
-        NUMBER_OF_CAMERAS_IN_SYSTEM=4,
-        SAVE_VIDEO = False,
-        OLD_VIDEO_PATH = "collected_data_from_cameras/video/2022_2_10/2022_2_10_15_23_camera_"
+    mode = ""
+    save_video = False
+    old_video_path = ""
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("mode", help="Mode can either be xy or xz")
+    parser.add_argument("-s", "--save",
+        help="Include if you want to save video and pose history",
+        action="store_true"
     )
-    # os.system('clear')
+    parser.add_argument("-p", "--path",
+        help="Path to the old video you want to replay",
+    )
+    args = parser.parse_args()
+    if args.mode == "xy":
+        mode = 0
+    elif args.mode == "xz":
+        mode = 1
+    else:
+        print("invalid input for mode")
+        sys.exit()
+    save_video = args.save
+    old_video_path = args.path
+
+    if old_video_path is not None:
+        if os.path.exists(old_video_path + "1.avi"):
+            m = MocapSystem(
+                NUMBER_OF_CAMERAS_IN_SYSTEM=4,
+                SAVE_VIDEO = False,
+                OLD_VIDEO_PATH = old_video_path
+            )
+        else:
+            print(old_video_path + "1.avi not found.")
+            sys.exit()
+    else:
+        m = MocapSystem(
+            NUMBER_OF_CAMERAS_IN_SYSTEM=4,
+            SAVE_VIDEO = save_video,
+            MODE=mode
+        )
+    os.system('clear')
+    if m.save_video:
+        print("NOTE: Saving video stream.")
+    else:
+        print("NOTE: Not Saving video stream.")
     app.run()

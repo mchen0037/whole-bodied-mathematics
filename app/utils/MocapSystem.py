@@ -14,7 +14,13 @@ from .VideoStreamWidget import VideoStreamWidget
 from .PoseQueue import PoseQueue
 
 class MocapSystem(object):
-    def __init__(self, NUMBER_OF_CAMERAS_IN_SYSTEM, SAVE_VIDEO=False, OLD_VIDEO_PATH=None):
+    def __init__(
+        self,
+        NUMBER_OF_CAMERAS_IN_SYSTEM,
+        SAVE_VIDEO=False,
+        OLD_VIDEO_PATH=None,
+        MODE=0
+    ):
         self.num_cameras = NUMBER_OF_CAMERAS_IN_SYSTEM
         self.save_video = SAVE_VIDEO
         self.old_video_path = OLD_VIDEO_PATH
@@ -28,6 +34,8 @@ class MocapSystem(object):
         self.aruco_pose_dict = {} # a dictionary of PoseQueues
         self.active_video_streams = []
         self.camera_id_meta_dict = {}
+        # Graph X-Y (0) or X-Z (1)
+        self.mode = MODE
 
         if self.old_video_path == None:
             self.camera_id_meta_dict, self.active_video_streams = (
