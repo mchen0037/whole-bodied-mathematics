@@ -11,6 +11,7 @@ from flask_sock import Sock
 
 from utils.MocapSystem import MocapSystem
 from utils.VideoStreamWidget import VideoStreamWidget
+from utils.constants import constants as C
 
 app = Flask(__name__)
 sock = Sock(app)
@@ -30,48 +31,45 @@ def echo(sock):
     print("Connected!")
     # update these with student points from webcam
     data = {}
-    # print(data)
-    # res = jsonify([1, 2, 3, 4, 5])
+    prev = 0
     while True:
         # send the data of the points over the websocket
         # print(data)
-        sock.send(data)
+        time_elapsed = time.time() - prev # time.time() returns seconds
+        if time_elapsed >= 1./C.FRAME_RATE:
+            prev = time.time()
+            sock.send(data)
+            avg_aruco_poses_dict = m.get_average_detected_markers()
+            if avg_aruco_poses_dict:
+                for aruco_marker in avg_aruco_poses_dict:
+                    point_key = str(aruco_marker)
+                    if point_key in data.keys():
+                        if m.mode == 0:
+                            data[point_key]["x"] = (
+                                avg_aruco_poses_dict[aruco_marker][0]
+                            )
+                            data[point_key]["y"] = (
+                                avg_aruco_poses_dict[aruco_marker][1]
+                            )
+                        else:
+                            data[point_key]["x"] = (
+                                avg_aruco_poses_dict[aruco_marker][0]
+                            )
+                            data[point_key]["y"] = (
+                                avg_aruco_poses_dict[aruco_marker][2]
+                            )
 
-        avg_aruco_poses_dict = m.get_average_detected_markers()
-        if avg_aruco_poses_dict:
-            for aruco_marker in avg_aruco_poses_dict:
-                point_key = str(aruco_marker)
-                if point_key in data.keys():
-                    if m.mode == 0:
-                        data[point_key]["x"] = (
-                            avg_aruco_poses_dict[aruco_marker][0]
-                        )
-                        data[point_key]["y"] = (
-                            avg_aruco_poses_dict[aruco_marker][1]
-                        )
                     else:
-                        data[point_key]["x"] = (
-                            avg_aruco_poses_dict[aruco_marker][0]
-                        )
-                        data[point_key]["y"] = (
-                            avg_aruco_poses_dict[aruco_marker][2]
-                        )
-
-                else:
-                    if m.mode == 0:
-                        data[point_key] = {
-                            "x": avg_aruco_poses_dict[aruco_marker][0],
-                            "y": avg_aruco_poses_dict[aruco_marker][1]
-                        }
-                    else:
-                        data[point_key] = {
-                            "x": avg_aruco_poses_dict[aruco_marker][0],
-                            "y": avg_aruco_poses_dict[aruco_marker][2]
-                        }
-
-        time.sleep(0.1)
-
-
+                        if m.mode == 0:
+                            data[point_key] = {
+                                "x": avg_aruco_poses_dict[aruco_marker][0],
+                                "y": avg_aruco_poses_dict[aruco_marker][1]
+                            }
+                        else:
+                            data[point_key] = {
+                                "x": avg_aruco_poses_dict[aruco_marker][0],
+                                "y": avg_aruco_poses_dict[aruco_marker][2]
+                            }
 
 @app.teardown_appcontext
 def teardown(exception):

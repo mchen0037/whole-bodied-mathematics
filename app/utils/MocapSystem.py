@@ -34,7 +34,7 @@ class MocapSystem(object):
         self.aruco_pose_dict = {} # a dictionary of PoseQueues
         self.active_video_streams = []
         self.camera_id_meta_dict = {}
-        
+
         # Graph X-Y (0) or X-Z (1)
         self.mode = MODE
 
@@ -188,22 +188,25 @@ class MocapSystem(object):
         # Append each detected Pose into a PoseQueue object so that we can
         # calculate the running average of its position.
         print("Looking for detected Markers!")
+        prev = 0
         while True:
-            for v in self.active_video_streams:
-                for aruco_id in v.detected_aruco_ids_dict.keys():
-                    if aruco_id in self.aruco_pose_dict:
-                        rvec_arr = v.detected_aruco_ids_dict[aruco_id]["rvec"]
-                        tvec_arr = v.detected_aruco_ids_dict[aruco_id]["tvec"]
-                        self.aruco_pose_dict[aruco_id].push(tvec_arr)
-                    else:
-                        self.aruco_pose_dict[aruco_id] = PoseQueue(
-                            aruco_id,
-                            v.detected_aruco_ids_dict[aruco_id]["tvec"]
-                        )
+            time_elapsed = time.time() - prev
+            if time_elapsed >= 1./C.FRAME_RATE:
+                prev = time.time()
+                for v in self.active_video_streams:
+                    for aruco_id in v.detected_aruco_ids_dict.keys():
+                        if aruco_id in self.aruco_pose_dict:
+                            rvec_arr = v.detected_aruco_ids_dict[aruco_id]["rvec"]
+                            tvec_arr = v.detected_aruco_ids_dict[aruco_id]["tvec"]
+                            self.aruco_pose_dict[aruco_id].push(tvec_arr)
+                        else:
+                            self.aruco_pose_dict[aruco_id] = PoseQueue(
+                                aruco_id,
+                                v.detected_aruco_ids_dict[aruco_id]["tvec"]
+                            )
                     # if aruco_id == 1:
                     #     print(v.id, v.detected_aruco_ids_dict[aruco_id]["tvec"])
 
-            time.sleep(1 / 30)
 
     def get_average_detected_markers(self):
         # Grabs the expected position from each PoseQueue for each aruco id

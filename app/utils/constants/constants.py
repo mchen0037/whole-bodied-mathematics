@@ -4,6 +4,10 @@ from cv2 import aruco
 SAVE_VIDEO_STREAM_FILE_PATH = "collected_data_from_cameras/video/"
 SAVE_POSE_HISTORY_FILE_PATH = "collected_data_from_cameras/pose_history/"
 
+# Frame Rate needs to be set manually
+# https://stackoverflow.com/a/54444910
+FRAME_RATE = 10
+
 # 640 x 480 pixels
 WEBCAM_FRAME_SIZE = (640, 480)
 
