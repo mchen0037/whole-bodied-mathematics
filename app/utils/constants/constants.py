@@ -1,8 +1,8 @@
 import numpy as np
 from cv2 import aruco
 
-SAVE_VIDEO_STREAM_FILE_PATH = "collected_data_from_cameras/video/"
-SAVE_POSE_HISTORY_FILE_PATH = "collected_data_from_cameras/pose_history/"
+SAVE_VIDEO_STREAM_FILE_PATH = "/media/mighty/research-1/collected_data_from_cameras/video/"
+SAVE_POSE_HISTORY_FILE_PATH = "/media/mighty/research-1/collected_data_from_cameras/pose_history/"
 
 # Frame Rate needs to be set manually
 # https://stackoverflow.com/a/54444910

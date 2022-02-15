@@ -116,7 +116,6 @@ if __name__ == "__main__":
             SAVE_VIDEO = save_video,
             MODE=mode
         )
-    os.system('clear')
     if m.save_video:
         print("NOTE: Saving video stream.")
     else:

@@ -94,6 +94,7 @@ class MocapSystem(object):
             raise AssertionError("""
                 Camera Sources and Number of Cameras in System mismatched!
             """)
+        os.system('clear')
 
         # All video streams will be appended in a list held in this Class
         for key in camera_id_meta_dict.keys():
@@ -173,7 +174,7 @@ class MocapSystem(object):
                 )
                 try:
                     f = open(pose_history_file_name, "x")
-                    f.write("timestamp, id, x, y, z")
+                    f.write("timestamp, id, x, y, z\n")
                     f.close()
                 except OSError as error:
                     print(error)
