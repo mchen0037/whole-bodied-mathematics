@@ -34,6 +34,7 @@ class MocapSystem(object):
         self.aruco_pose_dict = {} # a dictionary of PoseQueues
         self.active_video_streams = []
         self.camera_id_meta_dict = {}
+        
         # Graph X-Y (0) or X-Z (1)
         self.mode = MODE
 
@@ -211,7 +212,7 @@ class MocapSystem(object):
         for aruco_id in self.aruco_pose_dict:
             expected_aruco_poses_dict[aruco_id] = (
                 self.aruco_pose_dict[aruco_id].get_expected_pose(
-                    save = False,
+                    save = self.save_video,
                     save_location = self.pose_history_file_name
                 )
             )

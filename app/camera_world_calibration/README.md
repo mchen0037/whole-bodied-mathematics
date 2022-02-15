@@ -33,3 +33,4 @@ a = [x, y, z] # intrinsic_pose_estimate
 b = [x, y, z] # extrinsic_measured_real_world
 sqrt( (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2) # the result should be about 100cm
 ```
+* It may be helpful to disable the PoseQueue code for debugging individual cameras
