@@ -43,32 +43,39 @@ def echo(sock):
             if avg_aruco_poses_dict:
                 for aruco_marker in avg_aruco_poses_dict:
                     point_key = str(aruco_marker)
+                    rounded_x = (
+                        round(
+                            avg_aruco_poses_dict[aruco_marker][0] / m.rounding_amount
+                        ) * m.rounding_amount
+                    )
+                    rounded_y = (
+                        round(
+                            avg_aruco_poses_dict[aruco_marker][1] / m.rounding_amount
+                        ) * m.rounding_amount
+                    )
+                    rounded_z = (
+                        round(
+                            avg_aruco_poses_dict[aruco_marker][2] / m.rounding_amount
+                        ) * m.rounding_amount
+                    )
                     if point_key in data.keys():
                         if m.mode == 0:
-                            data[point_key]["x"] = (
-                                avg_aruco_poses_dict[aruco_marker][0]
-                            )
-                            data[point_key]["y"] = (
-                                avg_aruco_poses_dict[aruco_marker][1]
-                            )
+                            data[point_key]["x"] = rounded_x
+                            data[point_key]["y"] = rounded_y
                         else:
-                            data[point_key]["x"] = (
-                                avg_aruco_poses_dict[aruco_marker][0]
-                            )
-                            data[point_key]["y"] = (
-                                avg_aruco_poses_dict[aruco_marker][2]
-                            )
+                            data[point_key]["x"] = rounded_x
+                            data[point_key]["y"] = rounded_z
 
                     else:
                         if m.mode == 0:
                             data[point_key] = {
-                                "x": avg_aruco_poses_dict[aruco_marker][0],
-                                "y": avg_aruco_poses_dict[aruco_marker][1]
+                                "x": rounded_x,
+                                "y": rounded_y
                             }
                         else:
                             data[point_key] = {
-                                "x": avg_aruco_poses_dict[aruco_marker][0],
-                                "y": avg_aruco_poses_dict[aruco_marker][2]
+                                "x": rounded_x,
+                                "y": rounded_z
                             }
 
 @app.teardown_appcontext
@@ -79,6 +86,7 @@ if __name__ == "__main__":
     mode = ""
     save_video = False
     old_video_path = ""
+    round_by = 10
 
     parser = argparse.ArgumentParser()
     parser.add_argument("mode", help="Mode can either be xy or xz")
@@ -88,6 +96,9 @@ if __name__ == "__main__":
     )
     parser.add_argument("-p", "--path",
         help="Path to the old video you want to replay",
+    )
+    parser.add_argument("-r", "--round",
+        help="Increment you want to round by (default 10)",
     )
     args = parser.parse_args()
     if args.mode == "xy":
@@ -99,13 +110,15 @@ if __name__ == "__main__":
         sys.exit()
     save_video = args.save
     old_video_path = args.path
+    round_by = float(args.round) or round_by
 
     if old_video_path is not None:
         if os.path.exists(old_video_path + "1.avi"):
             m = MocapSystem(
                 NUMBER_OF_CAMERAS_IN_SYSTEM=4,
                 SAVE_VIDEO = False,
-                OLD_VIDEO_PATH = old_video_path
+                OLD_VIDEO_PATH = old_video_path,
+                ROUNDING_AMOUNT=round_by
             )
         else:
             print(old_video_path + "1.avi not found.")
@@ -114,7 +127,8 @@ if __name__ == "__main__":
         m = MocapSystem(
             NUMBER_OF_CAMERAS_IN_SYSTEM=4,
             SAVE_VIDEO = save_video,
-            MODE=mode
+            MODE=mode,
+            ROUNDING_AMOUNT=round_by
         )
     if m.save_video:
         print("NOTE: Saving video stream.")

@@ -19,11 +19,15 @@ class MocapSystem(object):
         NUMBER_OF_CAMERAS_IN_SYSTEM,
         SAVE_VIDEO=False,
         OLD_VIDEO_PATH=None,
-        MODE=0
+        MODE=0,
+        ROUNDING_AMOUNT=10
     ):
         self.num_cameras = NUMBER_OF_CAMERAS_IN_SYSTEM
         self.save_video = SAVE_VIDEO
         self.old_video_path = OLD_VIDEO_PATH
+        self.rounding_amount = ROUNDING_AMOUNT # How much to round output to
+        self.mode = MODE # Graph X-Y (0) or X-Z (1)
+
         # for each camera camera_id_meta_dict carries data on:
         # "1": {
         #     "src": int, the cv2.VideoCapture(#)
@@ -34,9 +38,6 @@ class MocapSystem(object):
         self.aruco_pose_dict = {} # a dictionary of PoseQueues
         self.active_video_streams = []
         self.camera_id_meta_dict = {}
-
-        # Graph X-Y (0) or X-Z (1)
-        self.mode = MODE
 
         if self.old_video_path == None:
             self.camera_id_meta_dict, self.active_video_streams = (
