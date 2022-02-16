@@ -62,8 +62,8 @@ class VideoStreamWidget(object):
             print(video_file_name)
             self.video_result = cv2.VideoWriter(video_file_name,
                 cv2.VideoWriter_fourcc(*'MJPG'),
-                C.FRAME_RATE,
-                C.WEBCAM_FRAME_SIZE
+                C.CAMERA_FRAME_RATE,
+                C.CAMERA_FRAME_SIZE
             )
         else:
             self.video_result = None
@@ -133,7 +133,7 @@ class VideoStreamWidget(object):
 
                 # Saving video stream for data collection
                 if self.status and self.camera_meta["save_video"]:
-                    if time_elapsed >= 1./C.FRAME_RATE:
+                    if time_elapsed >= 1./C.CAMERA_FRAME_RATE:
                         prev = time.time()
                         self.video_result.write(self.img_raw)
 

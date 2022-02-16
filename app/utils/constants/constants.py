@@ -6,10 +6,14 @@ SAVE_POSE_HISTORY_FILE_PATH = "/media/mighty/research-1/collected_data_from_came
 
 # Frame Rate needs to be set manually
 # https://stackoverflow.com/a/54444910
-FRAME_RATE = 10
+# Determines the frame rate for saving the video and taking new pictures
+CAMERA_FRAME_RATE = 24
+
+# The frame rate of web socket data so that we don't overload GGB
+MOCAP_OUT_FRAME_RATE = 10
 
 # 640 x 480 pixels
-WEBCAM_FRAME_SIZE = (640, 480)
+CAMERA_FRAME_SIZE = (640, 480)
 
 # These are the calibration we get by taking several pictures of the checkerboard.
 # These need to be changed if you swap out the type of camera.

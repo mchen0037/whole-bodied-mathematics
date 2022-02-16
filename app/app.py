@@ -36,7 +36,7 @@ def echo(sock):
         # send the data of the points over the websocket
         # print(data)
         time_elapsed = time.time() - prev # time.time() returns seconds
-        if time_elapsed >= 1./C.FRAME_RATE:
+        if time_elapsed >= 1./C.MOCAP_OUT_FRAME_RATE:
             prev = time.time()
             sock.send(data)
             avg_aruco_poses_dict = m.get_average_detected_markers()

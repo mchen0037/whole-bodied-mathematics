@@ -192,7 +192,7 @@ class MocapSystem(object):
         prev = 0
         while True:
             time_elapsed = time.time() - prev
-            if time_elapsed >= 1./C.FRAME_RATE:
+            if time_elapsed >= 1./C.CAMERA_FRAME_RATE:
                 prev = time.time()
                 for v in self.active_video_streams:
                     for aruco_id in v.detected_aruco_ids_dict.keys():
