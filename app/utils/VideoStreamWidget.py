@@ -62,8 +62,8 @@ class VideoStreamWidget(object):
             print(video_file_name)
             self.video_result = cv2.VideoWriter(video_file_name,
                 cv2.VideoWriter_fourcc(*'MJPG'),
-                30, #fps TODO: Test this
-                C.WEBCAM_FRAME_SIZE
+                C.CAMERA_FRAME_RATE,
+                C.CAMERA_FRAME_SIZE
             )
         else:
             self.video_result = None
@@ -107,7 +107,10 @@ class VideoStreamWidget(object):
         if self.id in C.CAMERA_EXTRINSIC_MATRIX_DICT.keys():
             CAM_MAT = C.CAMERA_EXTRINSIC_MATRIX_DICT[self.id]
         else:
-            print("WARNING: Camera Matrix not found in Dict. Using camera coordinates.")
+            print("""
+                WARNING: Camera Matrix not found in Dict.
+                Using camera coordinates.
+            """)
             return rvec, tvec
 
         CAM_ROT_MAT = CAM_MAT[:,0:3][0:3]
@@ -116,6 +119,7 @@ class VideoStreamWidget(object):
         return rvec, new_tvec
 
     def update(self, keep_old_values=False):
+        prev = 0
         while True:
             # Reinitialize as an empty dictionary so that we can clear any old
             # data in case the marker is no longer detected.
@@ -124,11 +128,14 @@ class VideoStreamWidget(object):
             marker_id_pose_dict = {}
 
             if self.capture.isOpened():
+                time_elapsed = time.time() - prev
                 self.status, self.img_raw = self.capture.read()
 
                 # Saving video stream for data collection
                 if self.status and self.camera_meta["save_video"]:
-                    self.video_result.write(self.img_raw)
+                    if time_elapsed >= 1./C.CAMERA_FRAME_RATE:
+                        prev = time.time()
+                        self.video_result.write(self.img_raw)
 
                 # undistort the image using the pre-loaded calibration file
                 self.undistorted_img = cv2.undistort(
@@ -201,8 +208,6 @@ class VideoStreamWidget(object):
             # DeMorgan's Law is wack 1/23/22
             if len(marker_id_pose_dict) != 0 or not keep_old_values:
                 self.detected_aruco_ids_dict = marker_id_pose_dict
-
-            time.sleep(0.1)
 
     def show_frame(self):
         cv2.imshow("camera " + str(self.id), self.undistorted_img)
