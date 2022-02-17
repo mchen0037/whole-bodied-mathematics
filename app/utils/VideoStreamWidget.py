@@ -29,7 +29,22 @@ class VideoStreamWidget(object):
         self.img_gray = None # img_gray is undistorted
         self.undistorted_img = None # If use_roi is True, crop the img
         self.img_with_aruco = None
+        self.video_result = self.get_video_result()
 
+        # {
+        #     1: { # these are the aruco id value
+        #        "camera_id": int the camera_id
+        #        "rvec": np.array(3,1) # rotation vector
+        #        "tvec": np.array(3,1) # translation vector
+        #     }
+        # }
+        self.detected_aruco_ids_dict = {}
+
+        self.thread = Thread(target=self.update, args=())
+        self.thread.daemon = True
+        self.thread.start()
+
+    def get_video_result(self):
         if self.camera_meta["save_video"]:
             current_datetime = datetime.datetime.now()
             current_year = current_datetime.year
@@ -60,26 +75,13 @@ class VideoStreamWidget(object):
                 str(self.id) + ".avi"
             )
             print(video_file_name)
-            self.video_result = cv2.VideoWriter(video_file_name,
+            return cv2.VideoWriter(video_file_name,
                 cv2.VideoWriter_fourcc(*'MJPG'),
                 C.CAMERA_FRAME_RATE,
                 C.CAMERA_FRAME_SIZE
             )
         else:
-            self.video_result = None
-
-        # {
-        #     1: { # these are the aruco id value
-        #        "camera_id": int the camera_id
-        #        "rvec": np.array(3,1) # rotation vector
-        #        "tvec": np.array(3,1) # translation vector
-        #     }
-        # }
-        self.detected_aruco_ids_dict = {}
-
-        self.thread = Thread(target=self.update, args=())
-        self.thread.daemon = True
-        self.thread.start()
+            return None
 
     def save_image(self, file_path, type="RAW"):
         img_to_save = None
@@ -104,7 +106,7 @@ class VideoStreamWidget(object):
         # Matrix Multiply to calculate the tvec of where the aruco marker is in
         # the world.
         CAM_MAT = None
-        if self.id in C.CAMERA_EXTRINSIC_MATRIX_DICT.keys():
+        if self.id in list(C.CAMERA_EXTRINSIC_MATRIX_DICT):
             CAM_MAT = C.CAMERA_EXTRINSIC_MATRIX_DICT[self.id]
         else:
             print("""

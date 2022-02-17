@@ -12,6 +12,7 @@ from .constants import constants as C
 
 from .VideoStreamWidget import VideoStreamWidget
 from .PoseQueue import PoseQueue
+from .ScreenCapture import ScreenCapture
 
 class MocapSystem(object):
     def __init__(
@@ -49,6 +50,11 @@ class MocapSystem(object):
             )
 
         self.pose_history_file_name = self.get_pose_history_file_name()
+        if self.save_video:
+            self.screen_capture = ScreenCapture()
+            print("Screen Capture saving.")
+        else:
+            print("Screen Capture not being saved.")
 
         self.thread = Thread(target=self.update_detected_markers, args=())
         self.thread.daemon = True
@@ -91,14 +97,14 @@ class MocapSystem(object):
 
         # After finding all camera matrices, make sure we assert that we have
         # the same amount of real cameras and sources.
-        if len(camera_id_meta_dict.keys()) != self.num_cameras:
+        if len(list(camera_id_meta_dict)) != self.num_cameras:
             raise AssertionError("""
                 Camera Sources and Number of Cameras in System mismatched!
             """)
         os.system('clear')
 
         # All video streams will be appended in a list held in this Class
-        for key in camera_id_meta_dict.keys():
+        for key in list(camera_id_meta_dict):
             v = VideoStreamWidget(key, camera_id_meta_dict[key])
             active_video_streams.append(v)
 
@@ -135,7 +141,7 @@ class MocapSystem(object):
             camera_meta["save_video"] = False
             camera_id_meta_dict[i] = camera_meta
 
-        for key in camera_id_meta_dict.keys():
+        for key in list(camera_id_meta_dict):
             v = VideoStreamWidget(key, camera_id_meta_dict[key])
             active_video_streams.append(v)
 
@@ -189,14 +195,13 @@ class MocapSystem(object):
         # Iterate through each camera and their detected aruco markers
         # Append each detected Pose into a PoseQueue object so that we can
         # calculate the running average of its position.
-        print("Looking for detected Markers!")
         prev = 0
         while True:
             time_elapsed = time.time() - prev
             if time_elapsed >= 1./C.CAMERA_FRAME_RATE:
                 prev = time.time()
                 for v in self.active_video_streams:
-                    for aruco_id in v.detected_aruco_ids_dict.keys():
+                    for aruco_id in list(v.detected_aruco_ids_dict):
                         if aruco_id in self.aruco_pose_dict:
                             rvec_arr = v.detected_aruco_ids_dict[aruco_id]["rvec"]
                             tvec_arr = v.detected_aruco_ids_dict[aruco_id]["tvec"]
@@ -214,7 +219,7 @@ class MocapSystem(object):
         # Grabs the expected position from each PoseQueue for each aruco id
         # And returns it for JSON transfer
         expected_aruco_poses_dict = {}
-        for aruco_id in self.aruco_pose_dict:
+        for aruco_id in list(self.aruco_pose_dict):
             expected_aruco_poses_dict[aruco_id] = (
                 self.aruco_pose_dict[aruco_id].get_expected_pose(
                     save = self.save_video,
