@@ -58,7 +58,7 @@ def echo(sock):
                             avg_aruco_poses_dict[aruco_marker][2] / m.rounding_amount
                         ) * m.rounding_amount
                     )
-                    if point_key in data.keys():
+                    if point_key in list(data):
                         if m.mode == 0:
                             data[point_key]["x"] = rounded_x
                             data[point_key]["y"] = rounded_y
@@ -110,7 +110,8 @@ if __name__ == "__main__":
         sys.exit()
     save_video = args.save
     old_video_path = args.path
-    round_by = float(args.round) or round_by
+
+    round_by = float(args.round) if args.round else round_by
 
     if old_video_path is not None:
         if os.path.exists(old_video_path + "1.avi"):
