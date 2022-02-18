@@ -57,9 +57,11 @@ class ScreenCapture(object):
         prev = 0
         while True:
             # ImageGrab uses PIL, which saves as RGB, OpenCV uses BGR.
-            screenshot = np.array(ImageGrab.grab(
-                backend="mss", childprocess=False
-            ))
+            screenshot = np.array(
+                ImageGrab.grab(
+                    backend="mss", childprocess=False
+                )
+            )
             cv_img = cv2.cvtColor(screenshot, cv2.COLOR_RGB2BGR)
             time_elapsed = time.time() - prev
             if time_elapsed >= 1./C.CAMERA_FRAME_RATE:

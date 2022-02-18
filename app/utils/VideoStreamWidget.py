@@ -44,6 +44,12 @@ class VideoStreamWidget(object):
         self.process.daemon = True
         self.process.start()
 
+        if camera_meta["save_video"]:
+            self.save_video_process = Process(target=self.save_video, args=())
+            self.save_video_process.daemon = True
+            self.save_video_process.start()
+
+
     def get_video_result(self):
         if self.camera_meta["save_video"]:
             current_datetime = datetime.datetime.now()
@@ -83,6 +89,14 @@ class VideoStreamWidget(object):
         else:
             return None
 
+    def save_video(self):
+        prev = 0
+        while True:
+            time_elapsed = time.time() - prev
+            if time_elapsed >= 1./C.CAMERA_FRAME_RATE:
+                prev = time.time()
+                self.video_result.write(self.img_raw)
+
     def save_image(self, file_path, type="RAW"):
         img_to_save = None
         if type == "RAW":
@@ -121,7 +135,6 @@ class VideoStreamWidget(object):
         return rvec, new_tvec
 
     def update(self, keep_old_values=False):
-        prev = 0
         while True:
             # Reinitialize as an empty dictionary so that we can clear any old
             # data in case the marker is no longer detected.
@@ -130,14 +143,7 @@ class VideoStreamWidget(object):
             marker_id_pose_dict = {}
 
             if self.capture.isOpened():
-                time_elapsed = time.time() - prev
                 self.status, self.img_raw = self.capture.read()
-
-                # Saving video stream for data collection
-                if self.status and self.camera_meta["save_video"]:
-                    if time_elapsed >= 1./C.CAMERA_FRAME_RATE:
-                        prev = time.time()
-                        self.video_result.write(self.img_raw)
 
                 # undistort the image using the pre-loaded calibration file
                 self.undistorted_img = cv2.undistort(
@@ -210,6 +216,8 @@ class VideoStreamWidget(object):
             # DeMorgan's Law is wack 1/23/22
             if len(marker_id_pose_dict) != 0 or not keep_old_values:
                 self.detected_aruco_ids_dict = marker_id_pose_dict
+
+            time.sleep(1./C.CAMERA_FRAME_RATE)
 
     def show_frame(self):
         cv2.imshow("camera " + str(self.id), self.undistorted_img)

@@ -4,7 +4,7 @@ class PoseQueue(object):
     def __init__(self, aruco_id, tvec):
 
         self.aruco_id = aruco_id
-        self.MAX_QUEUE_LENGTH = 50
+        self.MAX_QUEUE_LENGTH = 30
         self.length = 1
 
         # So we don't get any 0 errors, make sure we put in a dummy value

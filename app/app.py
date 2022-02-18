@@ -116,7 +116,7 @@ if __name__ == "__main__":
     if old_video_path is not None:
         if os.path.exists(old_video_path + "1.avi"):
             m = MocapSystem(
-                NUMBER_OF_CAMERAS_IN_SYSTEM=4,
+                NUMBER_OF_CAMERAS_IN_SYSTEM=C.NUM_CAMERAS,
                 SAVE_VIDEO = False,
                 OLD_VIDEO_PATH = old_video_path,
                 ROUNDING_AMOUNT=round_by
@@ -126,7 +126,7 @@ if __name__ == "__main__":
             sys.exit()
     else:
         m = MocapSystem(
-            NUMBER_OF_CAMERAS_IN_SYSTEM=4,
+            NUMBER_OF_CAMERAS_IN_SYSTEM=C.NUM_CAMERAS,
             SAVE_VIDEO = save_video,
             MODE=mode,
             ROUNDING_AMOUNT=round_by
