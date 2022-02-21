@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://www.desmos.com/api/v1.6/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+  <title>My HTML Page</title>
+  <!-- <link rel="stylesheet" type="text/css" title="Cool stylesheet" href="style.css"> -->
+</head>
+<body>
+  <div id="calculator" style="width: 1000px; height: 800px; margin: auto"></div>
+  <!-- <div id="root"></div>
+  <p>Hello World</p> -->
+  <!-- <script src="main.js" type="text/javascript"></script> -->
+  <script>
+    var elt = document.getElementById('calculator');
+    var calculator = Desmos.GraphingCalculator(elt);
+    calculator.updateSettings({
+      "keypad" : false,
+      "pasteGraphLink" : true,
+      "zoomButtons": false,
+      "pointsOfInterest": false,
+      "trace": false,
+      "border": true,
+      "lockViewport": true,
+      "expressionsCollapsed": true,
+      "projectorMode": true,
+      "showGrid": false
+    })
+    calculator.setMathBounds({
+      "left": -375,
+      "right": 375,
+      "bottom": -300,
+      "top": 300
+    })
+    // calculator.setState({
+    //   "showGrid": false
+    // })
+    // calculator.setExpression({ id: 'graph1', latex: 'y=x^2' });
+  </script>
+</body>
+</html>
