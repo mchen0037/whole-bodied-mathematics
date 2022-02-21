@@ -20,12 +20,12 @@ def echo(sock):
     # update these with student points from webcam
     data = {
         "0": {
-            "x": random.randint(1,6),
-            "y": random.randint(1,6)
+            "x": random.randint(-300,300),
+            "y": random.randint(-300,300)
         },
         "1": {
-            "x": random.randint(1,6),
-            "y": random.randint(1,6)
+            "x": random.randint(-300,300),
+            "y": random.randint(-300,300)
         }
     }
     prev = 0
@@ -38,12 +38,12 @@ def echo(sock):
             sock.send(data)
             data = {
                 "0": {
-                    "x": data["0"]["x"] + random.random() - 0.5,
-                    "y": data["0"]["y"] + random.random() - 0.5
+                    "x": data["0"]["x"] + 10 * random.random() - 5,
+                    "y": data["0"]["y"] + 10 * random.random() - 5
                 },
                 "1": {
-                    "x": data["1"]["x"] + random.random() - 0.5,
-                    "y": data["1"]["y"] + random.random() - 0.5
+                    "x": data["1"]["x"] + 10 * random.random() - 5,
+                    "y": data["1"]["y"] + 10 * random.random() - 5
                 }
             }
 
