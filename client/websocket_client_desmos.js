@@ -5,6 +5,9 @@ function create_web_socket_connection() {
 
   ws.onopen = function() {
      // Web Socket is connected, send data using send()
+     for (var i = 0; i < 10; i++) {
+       app.removeExpression({id: `P_{${i}}`});
+     }
      document.getElementById("status-icon").className = "bi bi-record-fill"
      document.getElementById("status-icon").style.color = "red"
      var buttonStart = document.getElementById("connect-web-socket-button")
