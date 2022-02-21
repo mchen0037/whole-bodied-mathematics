@@ -7,7 +7,6 @@ function create_web_socket_connection() {
      // Web Socket is connected, send data using send()
      document.getElementById("status-icon").className = "bi bi-record-fill"
      document.getElementById("status-icon").style.color = "red"
-     // ws.send("Message to send");
      var buttonStart = document.getElementById("connect-web-socket-button")
      buttonStart.style.display = "none"
      var buttonStop = document.getElementById("stop-websocket")
