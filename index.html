@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://www.desmos.com/api/v1.6/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+  <title>Whole Bodied Mathematics</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+</head>
+<body>
+  <div id="calculator" style="width: 1000px; height: 800px; margin: auto"></div>
+  <div id="buttons-and-settings" style="width: 1000px; padding-top: 10px; margin:auto">
+    <i id="status-icon" class="bi bi-pause-circle"></i>
+    <button id="connect-web-socket-button" style="display:inline;" type="radio" onClick="create_web_socket_connection()">
+      Connect
+    </button>
+    <button id="stop-websocket" style="display:none;" type="radio">
+      Disconnect
+    </button>
+  </div>
+  <script>
+    var elt = document.getElementById('calculator');
+    var calculator = Desmos.GraphingCalculator(elt);
+    calculator.updateSettings({
+      "keypad" : false,
+      "pasteGraphLink" : true,
+      "zoomButtons": false,
+      "pointsOfInterest": false,
+      "trace": false,
+      "border": true,
+      "lockViewport": true,
+      "expressionsCollapsed": true,
+      "projectorMode": true,
+      "showGrid": false
+    })
+    calculator.setMathBounds({
+      "left": -425,
+      "right": 425,
+      "bottom": -350,
+      "top": 350
+    })
+  </script>
+  <script src="client/websocket_client_desmos.js">
+
+  </script>
+</body>
+</html>
