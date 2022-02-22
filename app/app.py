@@ -68,11 +68,13 @@ def echo(sock):
 
                     else:
                         if m.mode == 0:
+                            print("send xy")
                             data[point_key] = {
                                 "x": rounded_x,
                                 "y": rounded_y
                             }
                         else:
+                            print("send xz")
                             data[point_key] = {
                                 "x": rounded_x,
                                 "y": rounded_z
@@ -118,6 +120,7 @@ if __name__ == "__main__":
             m = MocapSystem(
                 NUMBER_OF_CAMERAS_IN_SYSTEM=C.NUM_CAMERAS,
                 SAVE_VIDEO = False,
+                MODE=mode,
                 OLD_VIDEO_PATH = old_video_path,
                 ROUNDING_AMOUNT=round_by
             )
