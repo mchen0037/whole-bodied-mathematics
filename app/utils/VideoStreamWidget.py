@@ -7,6 +7,7 @@ import cv2
 from cv2 import aruco
 
 from multiprocessing import Process
+from threading import Thread
 
 from .constants import constants as C
 
@@ -41,14 +42,16 @@ class VideoStreamWidget(object):
         # }
         self.detected_aruco_ids_dict = {}
 
-        self.process = Process(target=self.update, args=())
-        self.process.daemon = True
-        self.process.start()
+        self.thread = Thread(target=self.update, args=())
+        self.thread.daemon = True
+        self.thread.start()
 
         if camera_meta["save_video"]:
-            self.save_video_process = Process(target=self.save_video, args=())
-            self.save_video_process.daemon = True
-            self.save_video_process.start()
+            # Since the VideoCapture is open on the original Process, I cannot
+            # use a separate process because I can't access the most recent image
+            self.save_video_thread = Thread(target=self.save_video, args=())
+            self.save_video_thread.daemon = True
+            self.save_video_thread.start()
 
 
     def get_video_result(self):
