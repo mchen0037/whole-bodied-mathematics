@@ -5,7 +5,8 @@ import time
 import cv2
 import numpy as np
 import pyscreenshot as ImageGrab
-from multiprocessing import Process
+from threading import Thread
+
 
 from .constants import constants as C
 
@@ -13,9 +14,9 @@ class ScreenCapture(object):
     def __init__(self):
         self.video_result = self.get_video_result()
 
-        self.process = Process(target=self.update, args=())
-        self.process.daemon = True
-        self.process.start()
+        self.thread = Thread(target=self.update, args=())
+        self.thread.daemon = True
+        self.thread.start()
 
 
     def get_video_result(self):

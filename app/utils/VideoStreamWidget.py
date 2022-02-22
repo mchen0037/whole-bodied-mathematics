@@ -6,7 +6,7 @@ import os
 import cv2
 from cv2 import aruco
 
-from multiprocessing import Process
+from threading import Thread
 
 from .constants import constants as C
 
@@ -40,9 +40,9 @@ class VideoStreamWidget(object):
         # }
         self.detected_aruco_ids_dict = {}
 
-        self.process = Process(target=self.update, args=())
-        self.process.daemon = True
-        self.process.start()
+        self.thread = Thread(target=self.update, args=())
+        self.thread.daemon = True
+        self.thread.start()
 
     def get_video_result(self):
         if self.camera_meta["save_video"]:

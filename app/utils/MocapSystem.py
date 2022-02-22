@@ -6,7 +6,7 @@ import os
 import cv2
 from cv2 import aruco
 
-from multiprocessing import Process
+from threading import Thread
 
 from .constants import constants as C
 
@@ -56,9 +56,9 @@ class MocapSystem(object):
         else:
             print("Screen Capture not being saved.")
 
-        self.process = Process(target=self.update_detected_markers)
-        self.process.daemon = True
-        self.process.start()
+        self.thread = Thread(target=self.update_detected_markers, args=())
+        self.thread.daemon = True
+        self.thread.start()
 
     def load_cameras(self):
         # This for loop iterates over 200 cv2 Video Capture Sources
