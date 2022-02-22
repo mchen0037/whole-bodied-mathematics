@@ -122,7 +122,7 @@ if __name__ == "__main__":
                 SAVE_VIDEO = False,
                 MODE=mode,
                 OLD_VIDEO_PATH = old_video_path,
-                ROUNDING_AMOUNT=round_by
+                ROUNDING_AMOUNT=round_by,
             )
         else:
             print(old_video_path + "1.avi not found.")
@@ -131,6 +131,8 @@ if __name__ == "__main__":
         m = MocapSystem(
             NUMBER_OF_CAMERAS_IN_SYSTEM=C.NUM_CAMERAS,
             SAVE_VIDEO = save_video,
+            # Give a 20 second buffer before start recording
+            RECORD_START_TIME = (time.time() + 20),
             MODE=mode,
             ROUNDING_AMOUNT=round_by
         )

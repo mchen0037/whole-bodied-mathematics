@@ -11,7 +11,7 @@ from multiprocessing import Process
 from .constants import constants as C
 
 class VideoStreamWidget(object):
-    def __init__ (self, id, camera_meta):
+    def __init__ (self, id, camera_meta, record_start_time):
         self.id = id # camera id
         # {
         #     "src": int, the cv2.VideoCapture(#)
@@ -30,6 +30,7 @@ class VideoStreamWidget(object):
         self.undistorted_img = None # If use_roi is True, crop the img
         self.img_with_aruco = None
         self.video_result = self.get_video_result()
+        self.record_start_time = record_start_time
 
         # {
         #     1: { # these are the aruco id value
@@ -92,10 +93,11 @@ class VideoStreamWidget(object):
     def save_video(self):
         prev = 0
         while True:
-            time_elapsed = time.time() - prev
-            if time_elapsed >= 1./C.CAMERA_FRAME_RATE:
-                prev = time.time()
-                self.video_result.write(self.img_raw)
+            if time.time() > self.record_start_time:
+                time_elapsed = time.time() - prev
+                if time_elapsed >= 1./C.CAMERA_FRAME_RATE:
+                    prev = time.time()
+                    self.video_result.write(self.img_raw)
 
     def save_image(self, file_path, type="RAW"):
         img_to_save = None
