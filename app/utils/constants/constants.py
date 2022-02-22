@@ -11,7 +11,9 @@ SAVE_SCREEN_STREAM_FILE_PATH = "/media/mighty/research-1/collected_data_from_cam
 # https://stackoverflow.com/a/54444910
 # Determines the frame rate for saving the video and taking new pictures
 CAMERA_FRAME_RATE = 10
-SCREEN_CAPTURE_FRAME_RATE = 20
+# Only use about 10 FPS for screen capture because pyscreenshot can't take
+# screenshots that fast
+SCREEN_CAPTURE_FRAME_RATE = 10
 
 # The frame rate of web socket data so that we don't overload Desmos
 MOCAP_OUT_FRAME_RATE = 15
