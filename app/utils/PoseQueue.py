@@ -1,6 +1,26 @@
-from datetime import datetime
+import time
 
 class PoseQueue(object):
+    """
+        A PoseQueue collects translation vectors over time so that we can
+        apply a probablistic model to where the expected position is of an
+        aruco marker.
+
+        - aruco_id <int>: the aruco_id associated with the Pose
+
+        - MAX_QUEUE_LENGTH <int>: the length of the PoseQueue. It store no more
+            than this number
+
+        - length <int>: Current length of the PoseQueue.
+
+        - pose_history <list<dict>>: Stores positions as a list of dictionaries
+            {
+                "timestamp": <float> time.time() value of when this value was recorded
+                "tvec": <np.array> 1x3 array which gives the x, y, z value of
+                    the detected aruco marker
+            }
+
+    """
     def __init__(self, aruco_id, tvec):
 
         self.aruco_id = aruco_id
@@ -10,13 +30,23 @@ class PoseQueue(object):
         # So we don't get any 0 errors, make sure we put in a dummy value
         # to begin with
         self.pose_history = [{
-            "timestamp": datetime.now().timestamp() * 1000, # in Milliseconds
+            "timestamp": time.time(), # in Milliseconds
             "tvec": tvec
         }]
 
     def push(self, tvec):
+        """
+            Pushes a value into the PoseQueue. If this goes beyond the
+            MAX_QUEUE_LENGTH, we pop the oldest value.
+
+            Inputs:
+                - tvec <np.array>: Translation vector which gives the x, y, z
+                    value of a detected aruco marker
+
+            Returns: None
+        """
         dat = {
-            "timestamp": datetime.now().timestamp() * 1000, # in Milliseconds
+            "timestamp": time.time(), # in Milliseconds
             "tvec": tvec
         }
         if len(self.pose_history) >= self.MAX_QUEUE_LENGTH:
@@ -29,6 +59,18 @@ class PoseQueue(object):
             self.length = self.length + 1
 
     def get_expected_pose(self, save=False, save_location=None):
+        """
+            Calculates the Expected Value for each x, y, z based on the
+            pose_history values in the PoseQueue.
+
+            Inputs:
+                - save <bool>: determines if we should save the Pose into a CSV file
+                - save_location <string>: the path to the CSV file
+
+            Returns:
+                - expected_pose <list>: [x, y, z] values of where we expect the
+                    aruco marker to be
+        """
         # Use a geometric which converges to 1 to calculate the probability
         # of each pose based on how old it is.
         # There's probably more advanced math for this but this is the
@@ -40,6 +82,7 @@ class PoseQueue(object):
         r = 1 - a_1
         sum_prob = 0
         expected_pose = None
+
         for idx, tvec_dict in enumerate(self.pose_history):
             i = idx + 1
             prob = a_1 * (r ** (i - 1))
@@ -51,12 +94,13 @@ class PoseQueue(object):
                 expected_pose = (
                     expected_pose + prob * self.pose_history[idx]["tvec"]
                 )
+
         if save == True:
             if save_location:
-                # try:
+                try:
                     # timestamp, id, x, y, z
                     f = open(save_location, "a")
-                    timestamp = datetime.now().timestamp() * 1000  # in ms
+                    timestamp = time.time()  # in ms
                     id = self.aruco_id
                     x = expected_pose[0]
                     y = expected_pose[1]
@@ -70,8 +114,7 @@ class PoseQueue(object):
                     )
                     f.write(line)
                     f.close()
-                # except:
-                    # print("Error in saving Pose")
-            # save expected pose
-            pass
+                except:
+                    print("Error in saving Pose")
+
         return expected_pose

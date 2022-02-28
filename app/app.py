@@ -116,6 +116,8 @@ if __name__ == "__main__":
     round_by = float(args.round) if args.round else round_by
 
     if old_video_path is not None:
+        # This function is current depricated, since I have no way of recording
+        # all four video streams at the same time.
         if os.path.exists(old_video_path + "1.avi"):
             m = MocapSystem(
                 NUMBER_OF_CAMERAS_IN_SYSTEM=C.NUM_CAMERAS,
