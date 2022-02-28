@@ -5,3 +5,4 @@ __pycache__/
 *.pyc
 app/collected_data_from_cameras/
 *.jpg
+*.avi

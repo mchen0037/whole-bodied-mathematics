@@ -6,7 +6,7 @@ import os
 import cv2
 from cv2 import aruco
 
-from multiprocessing import Process
+from threading import Thread
 
 from .constants import constants as C
 
@@ -19,12 +19,14 @@ class MocapSystem(object):
         self,
         NUMBER_OF_CAMERAS_IN_SYSTEM,
         SAVE_VIDEO=False,
+        RECORD_START_TIME=time.time() + 20,
         OLD_VIDEO_PATH=None,
         MODE=0,
         ROUNDING_AMOUNT=10
     ):
         self.num_cameras = NUMBER_OF_CAMERAS_IN_SYSTEM
         self.save_video = SAVE_VIDEO
+        self.record_start_time = RECORD_START_TIME
         self.old_video_path = OLD_VIDEO_PATH
         self.rounding_amount = ROUNDING_AMOUNT # How much to round output to
         self.mode = MODE # Graph X-Y (0) or X-Z (1)
@@ -51,14 +53,14 @@ class MocapSystem(object):
 
         self.pose_history_file_name = self.get_pose_history_file_name()
         if self.save_video:
-            self.screen_capture = ScreenCapture()
+            self.screen_capture = ScreenCapture(self.record_start_time)
             print("Screen Capture saving.")
         else:
             print("Screen Capture not being saved.")
 
-        self.process = Process(target=self.update_detected_markers)
-        self.process.daemon = True
-        self.process.start()
+        self.threading = Thread(target=self.update_detected_markers)
+        self.threading.daemon = True
+        self.threading.start()
 
     def load_cameras(self):
         # This for loop iterates over 200 cv2 Video Capture Sources
@@ -92,7 +94,12 @@ class MocapSystem(object):
                 )
                 camera_meta["new_camera_mtx"] = new_camera_mtx
                 camera_meta["roi"] = roi
-                camera_meta["save_video"] = self.save_video
+                # Hack-y way to handle this for now. Computer can't keep up
+                # with saving all 4 video streams.
+                if int(cam) == 3:
+                    camera_meta["save_video"] = self.save_video
+                else:
+                    camera_meta["save_video"] = False
                 camera_id_meta_dict[int(cam)] = camera_meta
 
         # After finding all camera matrices, make sure we assert that we have
@@ -105,7 +112,11 @@ class MocapSystem(object):
 
         # All video streams will be appended in a list held in this Class
         for key in list(camera_id_meta_dict):
-            v = VideoStreamWidget(key, camera_id_meta_dict[key])
+            v = VideoStreamWidget(
+                key,
+                camera_id_meta_dict[key],
+                self.record_start_time
+            )
             active_video_streams.append(v)
 
         return camera_id_meta_dict, active_video_streams

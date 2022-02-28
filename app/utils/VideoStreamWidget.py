@@ -7,11 +7,12 @@ import cv2
 from cv2 import aruco
 
 from multiprocessing import Process
+from threading import Thread
 
 from .constants import constants as C
 
 class VideoStreamWidget(object):
-    def __init__ (self, id, camera_meta):
+    def __init__ (self, id, camera_meta, record_start_time):
         self.id = id # camera id
         # {
         #     "src": int, the cv2.VideoCapture(#)
@@ -30,6 +31,7 @@ class VideoStreamWidget(object):
         self.undistorted_img = None # If use_roi is True, crop the img
         self.img_with_aruco = None
         self.video_result = self.get_video_result()
+        self.record_start_time = record_start_time
 
         # {
         #     1: { # these are the aruco id value
@@ -40,9 +42,17 @@ class VideoStreamWidget(object):
         # }
         self.detected_aruco_ids_dict = {}
 
-        self.process = Process(target=self.update, args=())
-        self.process.daemon = True
-        self.process.start()
+        self.thread = Thread(target=self.update, args=())
+        self.thread.daemon = True
+        self.thread.start()
+
+        # Saving video on all cameras is too intensive for my computer.
+        # Default is going to be false and I'll try to capture just 1 for data collection
+        if camera_meta["save_video"]:
+            self.save_video_thread = Thread(target=self.save_video, args=())
+            self.save_video_thread.daemon = True
+            self.save_video_thread.start()
+
 
     def get_video_result(self):
         if self.camera_meta["save_video"]:
@@ -83,6 +93,16 @@ class VideoStreamWidget(object):
         else:
             return None
 
+    def save_video(self):
+        prev = 0
+        while True:
+            if time.time() > self.record_start_time:
+                time_elapsed = time.time() - prev
+                if time_elapsed >= 1./C.CAMERA_FRAME_RATE:
+                    # print(time_elapsed)
+                    prev = time.time()
+                    self.video_result.write(self.img_raw)
+
     def save_image(self, file_path, type="RAW"):
         img_to_save = None
         if type == "RAW":
@@ -121,7 +141,6 @@ class VideoStreamWidget(object):
         return rvec, new_tvec
 
     def update(self, keep_old_values=False):
-        prev = 0
         while True:
             # Reinitialize as an empty dictionary so that we can clear any old
             # data in case the marker is no longer detected.
@@ -130,14 +149,7 @@ class VideoStreamWidget(object):
             marker_id_pose_dict = {}
 
             if self.capture.isOpened():
-                time_elapsed = time.time() - prev
                 self.status, self.img_raw = self.capture.read()
-
-                # Saving video stream for data collection
-                if self.status and self.camera_meta["save_video"]:
-                    if time_elapsed >= 1./C.CAMERA_FRAME_RATE:
-                        prev = time.time()
-                        self.video_result.write(self.img_raw)
 
                 # undistort the image using the pre-loaded calibration file
                 self.undistorted_img = cv2.undistort(
@@ -210,6 +222,8 @@ class VideoStreamWidget(object):
             # DeMorgan's Law is wack 1/23/22
             if len(marker_id_pose_dict) != 0 or not keep_old_values:
                 self.detected_aruco_ids_dict = marker_id_pose_dict
+
+            time.sleep(1./C.CAMERA_FRAME_RATE)
 
     def show_frame(self):
         cv2.imshow("camera " + str(self.id), self.undistorted_img)

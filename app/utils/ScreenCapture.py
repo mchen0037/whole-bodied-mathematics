@@ -10,8 +10,9 @@ from multiprocessing import Process
 from .constants import constants as C
 
 class ScreenCapture(object):
-    def __init__(self):
+    def __init__(self, record_start_time):
         self.video_result = self.get_video_result()
+        self.record_start_time = record_start_time
 
         self.process = Process(target=self.update, args=())
         self.process.daemon = True
@@ -49,19 +50,22 @@ class ScreenCapture(object):
 
         return cv2.VideoWriter(video_file_name,
             cv2.VideoWriter_fourcc(*'MJPG'),
-            C.CAMERA_FRAME_RATE,
+            C.SCREEN_CAPTURE_FRAME_RATE,
             C.SCREEN_CAPTURE_SIZE
         )
 
     def update(self):
         prev = 0
         while True:
-            # ImageGrab uses PIL, which saves as RGB, OpenCV uses BGR.
-            screenshot = np.array(ImageGrab.grab(
-                backend="mss", childprocess=False
-            ))
-            cv_img = cv2.cvtColor(screenshot, cv2.COLOR_RGB2BGR)
-            time_elapsed = time.time() - prev
-            if time_elapsed >= 1./C.CAMERA_FRAME_RATE:
-                prev = time.time()
-                self.video_result.write(cv_img)
+            if time.time() > self.record_start_time:
+                time_elapsed = time.time() - prev
+                # ImageGrab uses PIL, which saves as RGB, OpenCV uses BGR.
+                if time_elapsed >= 1./C.SCREEN_CAPTURE_FRAME_RATE:
+                    prev = time.time()
+                    screenshot = np.array(
+                        ImageGrab.grab(
+                            backend="mss", childprocess=False
+                        )
+                    )
+                    cv_img = cv2.cvtColor(screenshot, cv2.COLOR_RGB2BGR)
+                    self.video_result.write(cv_img)

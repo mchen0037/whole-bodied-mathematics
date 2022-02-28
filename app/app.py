@@ -68,11 +68,13 @@ def echo(sock):
 
                     else:
                         if m.mode == 0:
+                            print("send xy")
                             data[point_key] = {
                                 "x": rounded_x,
                                 "y": rounded_y
                             }
                         else:
+                            print("send xz")
                             data[point_key] = {
                                 "x": rounded_x,
                                 "y": rounded_z
@@ -116,18 +118,21 @@ if __name__ == "__main__":
     if old_video_path is not None:
         if os.path.exists(old_video_path + "1.avi"):
             m = MocapSystem(
-                NUMBER_OF_CAMERAS_IN_SYSTEM=4,
+                NUMBER_OF_CAMERAS_IN_SYSTEM=C.NUM_CAMERAS,
                 SAVE_VIDEO = False,
+                MODE=mode,
                 OLD_VIDEO_PATH = old_video_path,
-                ROUNDING_AMOUNT=round_by
+                ROUNDING_AMOUNT=round_by,
             )
         else:
             print(old_video_path + "1.avi not found.")
             sys.exit()
     else:
         m = MocapSystem(
-            NUMBER_OF_CAMERAS_IN_SYSTEM=4,
+            NUMBER_OF_CAMERAS_IN_SYSTEM=C.NUM_CAMERAS,
             SAVE_VIDEO = save_video,
+            # Give a 20 second buffer before start recording
+            RECORD_START_TIME = (time.time() + 20),
             MODE=mode,
             ROUNDING_AMOUNT=round_by
         )

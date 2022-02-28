@@ -1,6 +1,8 @@
 import numpy as np
 from cv2 import aruco
 
+NUM_CAMERAS = 4
+
 SAVE_VIDEO_STREAM_FILE_PATH = "/media/mighty/research-1/collected_data_from_cameras/video/"
 SAVE_POSE_HISTORY_FILE_PATH = "/media/mighty/research-1/collected_data_from_cameras/pose_history/"
 SAVE_SCREEN_STREAM_FILE_PATH = "/media/mighty/research-1/collected_data_from_cameras/screen/"
@@ -9,9 +11,12 @@ SAVE_SCREEN_STREAM_FILE_PATH = "/media/mighty/research-1/collected_data_from_cam
 # https://stackoverflow.com/a/54444910
 # Determines the frame rate for saving the video and taking new pictures
 CAMERA_FRAME_RATE = 10
+# Only use about 10 FPS for screen capture because pyscreenshot can't take
+# screenshots that fast
+SCREEN_CAPTURE_FRAME_RATE = 10
 
-# The frame rate of web socket data so that we don't overload GGB
-MOCAP_OUT_FRAME_RATE = 10
+# The frame rate of web socket data so that we don't overload Desmos
+MOCAP_OUT_FRAME_RATE = 15
 
 # 640 x 480 pixels
 CAMERA_FRAME_SIZE = (640, 480)
