@@ -10,16 +10,38 @@ from multiprocessing import Process
 from .constants import constants as C
 
 class ScreenCapture(object):
+    """
+        ScreenCapture handles all the screen capturing capability of the MocapSystem
+        When MocapSystem.save_video is True, we save the Screen Capture.
+
+        - video_result <cv2.VideoWriter>: VideoWriter object which handles
+            saving a .avi file on the file system
+
+        - record_start_time <float>: A value from time.time() which indicates
+            when to start recording the screen.
+
+        - update_process <Process>: Throws saving the video saving into a new
+            process to optimize runtime.
+    """
     def __init__(self, record_start_time):
         self.video_result = self.get_video_result()
         self.record_start_time = record_start_time
 
-        self.process = Process(target=self.update, args=())
-        self.process.daemon = True
-        self.process.start()
+        self.update_process = Process(target=self.update, args=())
+        self.update_process.daemon = True
+        self.update_process.start()
 
 
     def get_video_result(self):
+        """
+            Creates the folder and the .avi file for screen recording.
+
+            Inputs: None
+
+            Returns:
+                - video_result <cv2.VideoWriter> VideoWriter object which handles
+                    saving a .avi file on the file system
+        """
         current_datetime = datetime.datetime.now()
         current_year = current_datetime.year
         current_month = current_datetime.month
@@ -48,13 +70,24 @@ class ScreenCapture(object):
             str(current_minute) + "_screen.avi"
         )
 
-        return cv2.VideoWriter(video_file_name,
+        video_result = cv2.VideoWriter(video_file_name,
             cv2.VideoWriter_fourcc(*'MJPG'),
             C.SCREEN_CAPTURE_FRAME_RATE,
             C.SCREEN_CAPTURE_SIZE
         )
 
+        return video_result
+
     def update(self):
+        """
+            Grabs a screenshot from the display and then writes it to the
+            video_result object. This function is being run on a separate
+            Proces and has limited access to variables.
+
+            Inputs: None
+
+            Returns: None
+        """
         prev = 0
         while True:
             if time.time() > self.record_start_time:

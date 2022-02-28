@@ -55,8 +55,9 @@ class MocapSystem(object):
             <int> camera_id {
                 "src": <int> the cv2.VideoCapture(#)
                 "mtx": <np.array> the camera matrix to undistort the image
-                "dist_coeff": <np.array>, the distance coeffs to undistort the image
-                "new_camera_mtx": <np.array>, the new camera matrix to undistort img
+                "dist_coeff": <np.array> the distance coeffs to undistort the image
+                "new_camera_mtx": <np.array> the new camera matrix to undistort img
+                "save_video": <bool> if we should save video or not
             }
 
         - update_markers_thread <Thread>: Handles restructuring data into JSON format
