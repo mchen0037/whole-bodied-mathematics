@@ -15,6 +15,53 @@ from .PoseQueue import PoseQueue
 from .ScreenCapture import ScreenCapture
 
 class MocapSystem(object):
+    """
+        A class to describe the entire motion capture system. This object keeps
+        track of all data in the system and all boolean flags which are used
+        throughout the code.
+
+        - num_cameras <int> : how many cameras are going to be read.
+            This corresponds to C.NUM_CAMERAS in constants.py
+
+        - save_video <boolean>: Flag which determines if we should save VideoStream
+            data or not. Currently (2/27/22), if this is marked True, it will
+            only save data from Camera 3. This is a #FIXME, as my computer
+            can't handle recording all four cameras at the same time, consistently
+
+        - screen_capture: <ScreenCapture> Handles screen capturing if save_video
+            is set to True
+
+        - record_start_time <float>: a time.time() value. If save_video is True, time
+            the system will start recording at, to help sync up all the videos together
+
+        - old_video_path <string>: This path is used to read old VideoStream to run the
+            system based on old inputs. Currently (2/27/22) useless, since I
+            can't record all four cameras. Example:
+            "/media/mighty/research-1/collected_data_from_cameras/video/2022_2_17/2022_2_14_17_32_camera_"
+
+        - rounding_amount <int>: determines how much I round my output to. i.e.
+            a rounding_amount of 5 will round 93.141283 to 95.
+
+        - mode <int>: which tell us to plot using (x,y) positions in the room (0)
+            or (x,z) positions in the room (1)
+
+        - aruco_pose_dict <dictionary>: Each key refers to a particular
+            aruco id and the value is a PoseQueue to determine the position.
+
+        - active_video_streams <List<VideoStreamWidget>>: a list of all the
+            VideoStreamWidget objects which handle all cameras
+
+        - camera_id_meta_dict <dictionary>:
+            <int> camera_id {
+                "src": <int> the cv2.VideoCapture(#)
+                "mtx": <np.array> the camera matrix to undistort the image
+                "dist_coeff": <np.array>, the distance coeffs to undistort the image
+                "new_camera_mtx": <np.array>, the new camera matrix to undistort img
+            }
+
+        - update_markers_thread <Thread>: Handles restructuring data into JSON format
+
+    """
     def __init__(
         self,
         NUMBER_OF_CAMERAS_IN_SYSTEM,
@@ -31,13 +78,6 @@ class MocapSystem(object):
         self.rounding_amount = ROUNDING_AMOUNT # How much to round output to
         self.mode = MODE # Graph X-Y (0) or X-Z (1)
 
-        # for each camera camera_id_meta_dict carries data on:
-        # "1": {
-        #     "src": int, the cv2.VideoCapture(#)
-        #     "mtx": np.array, the camera matrix to undistort the image
-        #     "dist_coeff": np.array, the distance coeffs to undistort the image
-        #     "new_camera_mtx": np.array, the new camera matrix to undistort img
-        # }
         self.aruco_pose_dict = {} # a dictionary of PoseQueues
         self.active_video_streams = []
         self.camera_id_meta_dict = {}
@@ -58,11 +98,25 @@ class MocapSystem(object):
         else:
             print("Screen Capture not being saved.")
 
-        self.threading = Thread(target=self.update_detected_markers)
-        self.threading.daemon = True
-        self.threading.start()
+        self.update_markers_thread = Thread(target=self.update_detected_markers)
+        self.update_markers_thread.daemon = True
+        self.update_markers_thread.start()
+
 
     def load_cameras(self):
+        """
+            Asks the user which cameras are turned on to create an association
+            between the camera_ids and VideoCapture objects. This function is
+            used for live MocapSystem data, rather than replaying the history.
+
+            Inputs: None
+
+            Returns:
+                - camera_id_meta_dict <dict>: The meta data for each camera. Described
+                    in MocapSystem comment
+                - active_video_streams <list>: List of VideostreamWidgets for
+                    handling the Mocap System
+        """
         # This for loop iterates over 200 cv2 Video Capture Sources
         # Doing this because the webcams aren't correlating with what's in
         # /dev/video/*. The Camera number corresponds to the camera id
@@ -94,7 +148,8 @@ class MocapSystem(object):
                 )
                 camera_meta["new_camera_mtx"] = new_camera_mtx
                 camera_meta["roi"] = roi
-                # Hack-y way to handle this for now. Computer can't keep up
+
+                # FIXME: Hack-y way to handle this for now. Computer can't keep up
                 # with saving all 4 video streams.
                 if int(cam) == 3:
                     camera_meta["save_video"] = self.save_video
@@ -121,7 +176,20 @@ class MocapSystem(object):
 
         return camera_id_meta_dict, active_video_streams
 
+
     def load_video_history(self):
+        """
+            When we're using old video data to replay the MocapSystem outputs,
+            this function is called instead of load_cameras.
+
+            Inputs: None
+
+            Returns:
+                - camera_id_meta_dict <dict>: The meta data for each camera. Described
+                    in MocapSystem comment
+                - active_video_streams <list>: List of VideostreamWidgets for
+                    handling the Mocap System
+        """
         camera_id_meta_dict = {}
         active_video_streams = []
 
@@ -160,48 +228,69 @@ class MocapSystem(object):
 
 
     def get_pose_history_file_name(self):
+        """
+            Creates folders and files the prepare saving for the Pose History.
+
+            Inputs: None
+
+            Returns:
+                - pose_history_file_name <string>: File path to the CSV file
+                    which will save timestamped positions of aruco_ids.
+        """
         pose_history_file_name = None
         if self.save_video == True:
             for v in self.active_video_streams:
-                current_datetime = datetime.datetime.now()
-                current_year = current_datetime.year
-                current_month = current_datetime.month
-                current_day = current_datetime.day
-                current_hour = current_datetime.hour
-                current_minute = current_datetime.minute
+                # FIXME: Cannot save all camera inputs at the same time right now.
+                if v.id == 3:
+                    current_datetime = datetime.datetime.now()
+                    current_year = current_datetime.year
+                    current_month = current_datetime.month
+                    current_day = current_datetime.day
+                    current_hour = current_datetime.hour
+                    current_minute = current_datetime.minute
 
-                YY_MM_DD_FOLDER = (
-                    str(current_year) + "_" +
-                    str(current_month) + "_" +
-                    str(current_day) + "/"
-                )
+                    YY_MM_DD_FOLDER = (
+                        str(current_year) + "_" +
+                        str(current_month) + "_" +
+                        str(current_day) + "/"
+                    )
 
-                try:
-                    os.mkdir(C.SAVE_POSE_HISTORY_FILE_PATH + YY_MM_DD_FOLDER)
-                except OSError as error:
-                    print(error)
-                    print("Skipping")
+                    try:
+                        os.mkdir(C.SAVE_POSE_HISTORY_FILE_PATH + YY_MM_DD_FOLDER)
+                    except OSError as error:
+                        print(error)
+                        print("Skipping")
 
-                pose_history_file_name = (C.SAVE_POSE_HISTORY_FILE_PATH +
-                    YY_MM_DD_FOLDER +
-                    str(current_year) + "_" +
-                    str(current_month) + "_" +
-                    str(current_day) + "_" +
-                    str(current_hour) + "_" +
-                    str(current_minute) + "_pose_history.csv"
-                )
-                try:
-                    f = open(pose_history_file_name, "x")
-                    f.write("timestamp, id, x, y, z\n")
-                    f.close()
-                except OSError as error:
-                    print(error)
-                    print("Skipping")
+                    pose_history_file_name = (C.SAVE_POSE_HISTORY_FILE_PATH +
+                        YY_MM_DD_FOLDER +
+                        str(current_year) + "_" +
+                        str(current_month) + "_" +
+                        str(current_day) + "_" +
+                        str(current_hour) + "_" +
+                        str(current_minute) + "_pose_history.csv"
+                    )
+                    try:
+                        f = open(pose_history_file_name, "x")
+                        f.write("timestamp, id, x, y, z\n")
+                        f.close()
+                    except OSError as error:
+                        print(error)
+                        print("Skipping")
         else:
             print("Pose History not being saved.")
         return pose_history_file_name
 
+
     def update_detected_markers(self):
+        """
+            Accesses the data inside VideoStreamWidget.detected_aruco_ids_dict
+            and restructures it for easy access for JSON transfer. This function
+            is called repeatedly through the update_markers_thread Thread.
+
+            Inputs: None
+
+            Returns: None
+        """
         # Restructure the data so that we can prep for JSON Transfer
         # Iterate through each camera and their detected aruco markers
         # Append each detected Pose into a PoseQueue object so that we can
@@ -227,6 +316,17 @@ class MocapSystem(object):
 
 
     def get_average_detected_markers(self):
+        """
+            Uses the PoseQueue data from update_detected_markers to calculate
+            the expected value of each detected marker and then sends it to
+            app.py to transfer to the front end
+
+            Inputs: None
+
+            Returns:
+                - expected_aruco_poses_dict <dict>: A dictionary with keys of aruco_ids
+                    and values of the expected [x, y, z] values.
+        """
         # Grabs the expected position from each PoseQueue for each aruco id
         # And returns it for JSON transfer
         expected_aruco_poses_dict = {}
@@ -239,15 +339,3 @@ class MocapSystem(object):
             )
 
         return expected_aruco_poses_dict
-
-
-
-
-
-
-
-
-
-
-
-# end
