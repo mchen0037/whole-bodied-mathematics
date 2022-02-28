@@ -92,13 +92,21 @@ if __name__ == "__main__":
     mode = ""
     save_video = False
     old_video_path = ""
-    round_by = 10
+    round_by = 1
+    scale_x = 1
+    scale_y = 1
 
     parser = argparse.ArgumentParser()
     parser.add_argument("mode", help="Mode can either be xy or xz")
     parser.add_argument("-s", "--save",
         help="Include if you want to save video and pose history",
         action="store_true"
+    )
+    parser.add_argument("-kx", "--scale_x",
+        help="X Scale Factor on the MocapSystem",
+    )
+    parser.add_argument("-ky", "--scale_y",
+        help="Y Scale Factor on the MocapSystem",
     )
     parser.add_argument("-p", "--path",
         help="Path to the old video you want to replay",
@@ -118,6 +126,8 @@ if __name__ == "__main__":
     old_video_path = args.path
 
     round_by = float(args.round) if args.round else round_by
+    scale_x = float(args.scale_x) if args.scale_x else scale_x
+    scale_y = float(args.scale_y) if args.scale_y else scale_y
 
     if old_video_path is not None:
         # This function is current depricated, since I have no way of recording
@@ -129,6 +139,8 @@ if __name__ == "__main__":
                 MODE=mode,
                 OLD_VIDEO_PATH = old_video_path,
                 ROUNDING_AMOUNT=round_by,
+                SCALE_X=scale_x,
+                SCALE_Y=scale_y
             )
         else:
             print(old_video_path + "1.avi not found.")
@@ -140,7 +152,9 @@ if __name__ == "__main__":
             # Give a 20 second buffer before start recording
             RECORD_START_TIME = (time.time() + 20),
             MODE=mode,
-            ROUNDING_AMOUNT=round_by
+            ROUNDING_AMOUNT=round_by,
+            SCALE_X=scale_x,
+            SCALE_Y=scale_y
         )
     if m.save_video:
         print("NOTE: Saving video stream.")

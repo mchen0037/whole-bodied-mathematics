@@ -42,6 +42,12 @@ class MocapSystem(object):
         - rounding_amount <int>: determines how much I round my output to. i.e.
             a rounding_amount of 5 will round 93.141283 to 95.
 
+        - scale_x <float>: Determines what to multiply every value by to scale
+            the room up or down for the x value.
+
+        - scale_y <float>: Determines what to multiply every value by to scale
+            the room up or down for the y value.
+
         - mode <int>: which tell us to plot using (x,y) positions in the room (0)
             or (x,z) positions in the room (1)
 
@@ -70,13 +76,17 @@ class MocapSystem(object):
         RECORD_START_TIME=time.time() + 20,
         OLD_VIDEO_PATH=None,
         MODE=0,
-        ROUNDING_AMOUNT=10
+        ROUNDING_AMOUNT=10,
+        SCALE_X=1,
+        SCALE_Y=1
     ):
         self.num_cameras = NUMBER_OF_CAMERAS_IN_SYSTEM
         self.save_video = SAVE_VIDEO
         self.record_start_time = RECORD_START_TIME
         self.old_video_path = OLD_VIDEO_PATH
         self.rounding_amount = ROUNDING_AMOUNT # How much to round output to
+        self.scale_x = SCALE_X
+        self.scale_y = SCALE_Y
         self.mode = MODE # Graph X-Y (0) or X-Z (1)
 
         self.aruco_pose_dict = {} # a dictionary of PoseQueues
