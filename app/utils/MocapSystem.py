@@ -94,7 +94,12 @@ class MocapSystem(object):
                 )
                 camera_meta["new_camera_mtx"] = new_camera_mtx
                 camera_meta["roi"] = roi
-                camera_meta["save_video"] = self.save_video
+                # Hack-y way to handle this for now. Computer can't keep up
+                # with saving all 4 video streams.
+                if int(cam) == 3:
+                    camera_meta["save_video"] = self.save_video
+                else:
+                    camera_meta["save_video"] = False
                 camera_id_meta_dict[int(cam)] = camera_meta
 
         # After finding all camera matrices, make sure we assert that we have

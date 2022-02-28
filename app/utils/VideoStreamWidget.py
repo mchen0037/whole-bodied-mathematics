@@ -46,9 +46,9 @@ class VideoStreamWidget(object):
         self.thread.daemon = True
         self.thread.start()
 
+        # Saving video on all cameras is too intensive for my computer.
+        # Default is going to be false and I'll try to capture just 1 for data collection
         if camera_meta["save_video"]:
-            # Since the VideoCapture is open on the original Process, I cannot
-            # use a separate process because I can't access the most recent image
             self.save_video_thread = Thread(target=self.save_video, args=())
             self.save_video_thread.daemon = True
             self.save_video_thread.start()
@@ -99,6 +99,7 @@ class VideoStreamWidget(object):
             if time.time() > self.record_start_time:
                 time_elapsed = time.time() - prev
                 if time_elapsed >= 1./C.CAMERA_FRAME_RATE:
+                    # print(time_elapsed)
                     prev = time.time()
                     self.video_result.write(self.img_raw)
 
