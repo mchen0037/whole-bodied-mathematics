@@ -22,6 +22,9 @@ MOCAP_OUT_FRAME_RATE = 15
 CAMERA_FRAME_SIZE = (640, 480)
 SCREEN_CAPTURE_SIZE = (1680,1050)
 
+# The default bounds in real world in cm
+DEFAULT_BOUNDS = [-400, 400, -300, 300]
+
 # These are the calibration we get by taking several pictures of the checkerboard.
 # These need to be changed if you swap out the type of camera.
 # I make the assumption here that all cameras will be the same, but if they are not

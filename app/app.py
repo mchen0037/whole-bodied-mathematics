@@ -32,6 +32,12 @@ def echo(sock):
     # update these with student points from webcam
     data = {}
     prev = 0
+    scale_x = abs(m.bounds[0] - m.bounds[1]) / abs(C.DEFAULT_BOUNDS[0] - C.DEFAULT_BOUNDS[1])
+    scale_y = abs(m.bounds[2] - m.bounds[3]) / abs(C.DEFAULT_BOUNDS[2] - C.DEFAULT_BOUNDS[3])
+    print(scale_x, scale_y)
+    # TODO:
+    # translate_x = ...
+    # translate_y = ...
     while True:
         # send the data of the points over the websocket
         # print(data)
@@ -40,6 +46,7 @@ def echo(sock):
             prev = time.time()
             sock.send(data)
             avg_aruco_poses_dict = m.get_average_detected_markers()
+            # print(avg_aruco_poses_dict)
             if avg_aruco_poses_dict:
                 for aruco_marker in avg_aruco_poses_dict:
                     point_key = str(aruco_marker)
@@ -60,24 +67,24 @@ def echo(sock):
                     )
                     if point_key in list(data):
                         if m.mode == 0:
-                            data[point_key]["x"] = rounded_x * m.scale_x
-                            data[point_key]["y"] = rounded_y * m.scale_y
+                            data[point_key]["x"] = rounded_x * scale_x
+                            data[point_key]["y"] = rounded_y * scale_y
                         else:
-                            data[point_key]["x"] = rounded_x * m.scale_x
-                            data[point_key]["y"] = rounded_z * m.scale_y
+                            data[point_key]["x"] = rounded_x * scale_x
+                            data[point_key]["y"] = rounded_z * scale_y
 
                     else:
                         if m.mode == 0:
                             print("send xy")
                             data[point_key] = {
-                                "x": rounded_x * m.scale_x,
-                                "y": rounded_y * m.scale_y
+                                "x": rounded_x * scale_x,
+                                "y": rounded_y * scale_y
                             }
                         else:
                             print("send xz")
                             data[point_key] = {
-                                "x": rounded_x * m.scale_x,
-                                "y": rounded_z * m.scale_y
+                                "x": rounded_x * scale_x,
+                                "y": rounded_z * scale_y
                             }
 
 @app.teardown_appcontext
@@ -89,8 +96,7 @@ if __name__ == "__main__":
     save_video = False
     old_video_path = ""
     round_by = 1
-    scale_x = 1
-    scale_y = 1
+    bounds = []
 
     parser = argparse.ArgumentParser()
     parser.add_argument("mode", help="Mode can either be xy or xz")
@@ -98,11 +104,9 @@ if __name__ == "__main__":
         help="Include if you want to save video and pose history",
         action="store_true"
     )
-    parser.add_argument("-kx", "--scale_x",
-        help="X Scale Factor on the MocapSystem",
-    )
-    parser.add_argument("-ky", "--scale_y",
-        help="Y Scale Factor on the MocapSystem",
+    parser.add_argument("-b", "--bounds",
+        help="Describe the bounds for the space using min_x, max_x, min_y, max_y",
+        nargs="*"
     )
     parser.add_argument("-p", "--path",
         help="Path to the old video you want to replay",
@@ -122,8 +126,25 @@ if __name__ == "__main__":
     old_video_path = args.path
 
     round_by = float(args.round) if args.round else round_by
-    scale_x = float(args.scale_x) if args.scale_x else scale_x
-    scale_y = float(args.scale_y) if args.scale_y else scale_y
+    if args.bounds:
+        if len(args.bounds) != 4:
+            print("Need 4 inputs for --bounds.")
+            sys.exit()
+        else:
+            args.bounds[0] = int(args.bounds[0])
+            args.bounds[1] = int(args.bounds[1])
+            args.bounds[2] = int(args.bounds[2])
+            args.bounds[3] = int(args.bounds[3])
+
+            if args.bounds[0] >= args.bounds[1]:
+                print("Max X needs to be larger than Min X.")
+                sys.exit()
+
+            if args.bounds[2] >= args.bounds[3]:
+                print("Max Y needs to be larger than Min Y.")
+                sys.exit()
+
+    bounds = args.bounds if args.bounds else C.DEFAULT_BOUNDS
 
     if old_video_path is not None:
         # This function is current depricated, since I have no way of recording
@@ -131,12 +152,11 @@ if __name__ == "__main__":
         if os.path.exists(old_video_path + "1.avi"):
             m = MocapSystem(
                 NUMBER_OF_CAMERAS_IN_SYSTEM=C.NUM_CAMERAS,
-                SAVE_VIDEO = False,
+                SAVE_VIDEO=False,
                 MODE=mode,
-                OLD_VIDEO_PATH = old_video_path,
+                OLD_VIDEO_PATH=old_video_path,
                 ROUNDING_AMOUNT=round_by,
-                SCALE_X=scale_x,
-                SCALE_Y=scale_y
+                BOUNDS=bounds
             )
         else:
             print(old_video_path + "1.avi not found.")
@@ -149,8 +169,7 @@ if __name__ == "__main__":
             RECORD_START_TIME = (time.time() + 20),
             MODE=mode,
             ROUNDING_AMOUNT=round_by,
-            SCALE_X=scale_x,
-            SCALE_Y=scale_y
+            BOUNDS=bounds
         )
     if m.save_video:
         print("NOTE: Saving video stream.")
