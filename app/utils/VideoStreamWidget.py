@@ -317,9 +317,8 @@ class VideoStreamWidget(object):
                                 "tvec": tvec_world
                             }
 
-            if len(marker_id_pose_dict) != 0:
-                self.detected_aruco_ids_dict = marker_id_pose_dict
-
+            # if len(marker_id_pose_dict) != 0:
+            self.detected_aruco_ids_dict = marker_id_pose_dict
             time.sleep(1./C.CAMERA_FRAME_RATE)
 
 

@@ -332,11 +332,10 @@ class MocapSystem(object):
         # And returns it for JSON transfer
         expected_aruco_poses_dict = {}
         for aruco_id in list(self.aruco_pose_dict):
-            expected_aruco_poses_dict[aruco_id] = (
-                self.aruco_pose_dict[aruco_id].get_expected_pose(
-                    save = self.save_video,
-                    save_location = self.pose_history_file_name
-                )
+            expected_pose = self.aruco_pose_dict[aruco_id].get_expected_pose(
+                save = self.save_video,
+                save_location = self.pose_history_file_name
             )
-
+            expected_aruco_poses_dict[aruco_id] = expected_pose
+            print(expected_pose)
         return expected_aruco_poses_dict

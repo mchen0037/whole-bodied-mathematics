@@ -1,4 +1,5 @@
 import time
+from threading import Thread
 
 class PoseQueue(object):
     """
@@ -33,6 +34,20 @@ class PoseQueue(object):
             "timestamp": time.time(), # in Milliseconds
             "tvec": tvec
         }]
+
+        clear_old_values_thread = Thread(target=self.clear_old_values, args=())
+        clear_old_values_thread.daemon = True
+        clear_old_values_thread.start()
+
+    def clear_old_values(self):
+        print("clearoldvalues")
+        while True:
+            if self.length >= 1 and self.pose_history[0]["timestamp"] + 3 <= time.time():
+                self.pose_history.pop(0)
+                self.length = self.length - 1
+
+            time.sleep(0.1)
+
 
     def push(self, tvec):
         """
@@ -78,7 +93,7 @@ class PoseQueue(object):
         # https://www.desmos.com/calculator/fwrz2lwttq
         # This is based on a max_queue_length of 20, will break otherwise
         # expected pose is [x, y, z]
-        a_1 = ((-1 * 0.95 / (self.MAX_QUEUE_LENGTH - 1)) * (self.length - 1)) + 1
+        a_1 = ((-1 * 0.65 / (self.MAX_QUEUE_LENGTH)) * (self.length - 1)) + 1
         r = 1 - a_1
         sum_prob = 0
         expected_pose = None
