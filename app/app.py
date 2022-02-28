@@ -40,7 +40,6 @@ def echo(sock):
             prev = time.time()
             sock.send(data)
             avg_aruco_poses_dict = m.get_average_detected_markers()
-            print(avg_aruco_poses_dict)
             if avg_aruco_poses_dict:
                 for aruco_marker in avg_aruco_poses_dict:
                     if avg_aruco_poses_dict[aruco_marker] is not None:

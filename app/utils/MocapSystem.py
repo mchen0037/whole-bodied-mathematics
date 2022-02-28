@@ -337,5 +337,4 @@ class MocapSystem(object):
                 save_location = self.pose_history_file_name
             )
             expected_aruco_poses_dict[aruco_id] = expected_pose
-            print(expected_pose)
         return expected_aruco_poses_dict
