@@ -23,7 +23,7 @@ CAMERA_FRAME_SIZE = (640, 480)
 SCREEN_CAPTURE_SIZE = (1680,1050)
 
 # The default bounds in real world in cm
-DEFAULT_BOUNDS = [-400, 400, -300, 300]
+DEFAULT_BOUNDS = [-300, 300, -200, 200]
 
 # These are the calibration we get by taking several pictures of the checkerboard.
 # These need to be changed if you swap out the type of camera.
