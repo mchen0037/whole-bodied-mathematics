@@ -1,4 +1,5 @@
 import time
+from threading import Thread
 
 class PoseQueue(object):
     """
@@ -34,6 +35,29 @@ class PoseQueue(object):
             "tvec": tvec
         }]
 
+        clear_old_values_thread = Thread(target=self.clear_old_values, args=())
+        clear_old_values_thread.daemon = True
+        clear_old_values_thread.start()
+
+    def clear_old_values(self):
+        """
+            When a value in the PoseQueue is older than 3 seconds, we remove it
+            from the pose_history. This will clear any old values and make
+            the point disappear when the value is too old. This function is run
+            on the clear_old_values_thread.
+
+            Inputs: None
+
+            Returns: None
+        """
+        while True:
+            if self.length >= 1 and self.pose_history[0]["timestamp"] + 3 <= time.time():
+                self.pose_history.pop(0)
+                self.length = self.length - 1
+
+            time.sleep(0.1)
+
+
     def push(self, tvec):
         """
             Pushes a value into the PoseQueue. If this goes beyond the
@@ -61,7 +85,7 @@ class PoseQueue(object):
     def get_expected_pose(self, save=False, save_location=None):
         """
             Calculates the Expected Value for each x, y, z based on the
-            pose_history values in the PoseQueue.
+            pose_history values in the PoseQueue. Uses a running average.
 
             Inputs:
                 - save <bool>: determines if we should save the Pose into a CSV file
@@ -71,29 +95,21 @@ class PoseQueue(object):
                 - expected_pose <list>: [x, y, z] values of where we expect the
                     aruco marker to be
         """
-        # Use a geometric which converges to 1 to calculate the probability
-        # of each pose based on how old it is.
-        # There's probably more advanced math for this but this is the
-        # best I got
-        # https://www.desmos.com/calculator/fwrz2lwttq
-        # This is based on a max_queue_length of 20, will break otherwise
-        # expected pose is [x, y, z]
-        a_1 = ((-1 * 0.95 / (self.MAX_QUEUE_LENGTH - 1)) * (self.length - 1)) + 1
-        r = 1 - a_1
-        sum_prob = 0
-        expected_pose = None
+        if self.length == 0:
+            return None
 
-        for idx, tvec_dict in enumerate(self.pose_history):
-            i = idx + 1
-            prob = a_1 * (r ** (i - 1))
-            sum_prob = sum_prob + prob
+        sum_x = 0
+        sum_y = 0
+        sum_z = 0
+        for tvec_dict in self.pose_history:
+            sum_x = sum_x + tvec_dict["tvec"][0]
+            sum_y = sum_y + tvec_dict["tvec"][1]
+            sum_z = sum_z + tvec_dict["tvec"][2]
+        avg_x = sum_x / self.length
+        avg_y = sum_y / self.length
+        avg_z = sum_z / self.length
 
-            if expected_pose is None:
-                expected_pose = prob * self.pose_history[idx]["tvec"]
-            else:
-                expected_pose = (
-                    expected_pose + prob * self.pose_history[idx]["tvec"]
-                )
+        expected_pose = [avg_x, avg_y, avg_z]
 
         if save == True:
             if save_location:

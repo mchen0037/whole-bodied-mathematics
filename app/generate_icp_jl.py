@@ -29,16 +29,16 @@ with open(data_path, "r") as csvfile:
         else:
             data_row = row
             new_julia_line = ("p" + str(line_count) + " = Float64[" +
-                str(data_row[3]) + "," +
                 str(data_row[4]) + "," +
-                str(data_row[5]) + "]" + "\n"
+                str(data_row[5]) + "," +
+                str(data_row[6]) + "]" + "\n"
             )
             julia_file.write(new_julia_line)
 
             new_julia_line_2 = ("q" + str(line_count) + " = Float64[" +
-                str(data_row[0]) + "," +
                 str(data_row[1]) + "," +
-                str(data_row[2]) + "]" + "\n"
+                str(data_row[2]) + "," +
+                str(data_row[3]) + "]" + "\n"
             )
             julia_file.write(new_julia_line_2)
             line_count += 1
