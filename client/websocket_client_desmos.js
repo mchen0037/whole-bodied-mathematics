@@ -31,11 +31,28 @@ function create_web_socket_connection() {
      keys = Object.keys(parsed)
 
      for (var i = 0; i < keys.length; i++) {
-       app.setExpression({
-         "id": `P_{${keys[i]}}`,
-         "latex": `P_{${keys[i]}}=(${parsed[keys[i]].x}, ${parsed[keys[i]].y})`,
-         "dragMode": Desmos.DragModes.NONE
-       })
+      color = Desmos.Colors.BLACK;
+      if (keys[i] == 1) {
+        color = Desmos.Colors.RED;
+      }
+      else if (keys[i] == 2) {
+        color = Desmos.Colors.BLUE;
+      }
+      else if (keys[i] == 3) {
+        color = Desmos.Colors.GREEN;
+      }
+      else if (keys[i] == 4) {
+        color = Desmos.Colors.PURPLE;
+      }
+      else if (keys[i] == 5) {
+        color = Desmos.Colors.ORANGE;
+      }
+      app.setExpression({
+        "id": `P_{${keys[i]}}`,
+        "latex": `P_{${keys[i]}}=(${parsed[keys[i]].x}, ${parsed[keys[i]].y})`,
+        "dragMode": Desmos.DragModes.NONE,
+        "color": color
+      })
      }
   };
 
