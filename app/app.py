@@ -26,6 +26,11 @@ def hello_world():
             pass
     return("hello world")
 
+def get_client_value(camera_value, scale, translation, rounding_amount):
+    val = scale * (camera_value - translation)
+    rounded_val = round(val / rounding_amount) * rounding_amount
+    return rounded_val
+
 @sock.route("/echo")
 def echo(sock):
     print("Connected!")
@@ -34,10 +39,9 @@ def echo(sock):
     prev = 0
     scale_x = abs(m.bounds[0] - m.bounds[1]) / abs(C.DEFAULT_BOUNDS[0] - C.DEFAULT_BOUNDS[1])
     scale_y = abs(m.bounds[2] - m.bounds[3]) / abs(C.DEFAULT_BOUNDS[2] - C.DEFAULT_BOUNDS[3])
-    print(scale_x, scale_y)
-    # TODO:
-    # translate_x = ...
-    # translate_y = ...
+    translate_x = m.origin[0]
+    translate_y = m.origin[1]
+    translate_z = m.origin[2]
     while True:
         # send the data of the points over the websocket
         # print(data)
@@ -50,26 +54,23 @@ def echo(sock):
             if avg_aruco_poses_dict:
                 for aruco_marker in avg_aruco_poses_dict:
                     point_key = str(aruco_marker)
-                    rounded_x = (
-                        round(
-                            avg_aruco_poses_dict[aruco_marker][0] *
-                            scale_x /
-                            m.rounding_amount
-                        ) * m.rounding_amount
+                    rounded_x = get_client_value(
+                        avg_aruco_poses_dict[aruco_marker][0],
+                        scale_x,
+                        translate_x,
+                        m.rounding_amount
                     )
-                    rounded_y = (
-                        round(
-                            avg_aruco_poses_dict[aruco_marker][1] *
-                            scale_y /
-                            m.rounding_amount
-                        ) * m.rounding_amount
+                    rounded_y = get_client_value(
+                        avg_aruco_poses_dict[aruco_marker][1],
+                        scale_y,
+                        translate_y,
+                        m.rounding_amount
                     )
-                    rounded_z = (
-                        round(
-                            avg_aruco_poses_dict[aruco_marker][2] *
-                            scale_y /
-                            m.rounding_amount
-                        ) * m.rounding_amount
+                    rounded_z = get_client_value(
+                        avg_aruco_poses_dict[aruco_marker][2],
+                        scale_y,
+                        translate_z,
+                        m.rounding_amount
                     )
                     if point_key in list(data):
                         if m.mode == 0:
@@ -81,13 +82,11 @@ def echo(sock):
 
                     else:
                         if m.mode == 0:
-                            print("send xy")
                             data[point_key] = {
                                 "x": rounded_x,
                                 "y": rounded_y
                             }
                         else:
-                            print("send xz")
                             data[point_key] = {
                                 "x": rounded_x,
                                 "y": rounded_z
@@ -114,6 +113,10 @@ if __name__ == "__main__":
         help="Describe the bounds for the space using min_x, max_x, min_y, max_y",
         nargs="*"
     )
+    parser.add_argument("-o", "--origin",
+        help="Where you want to shift the origin in real life to",
+        nargs="*"
+    )
     parser.add_argument("-p", "--path",
         help="Path to the old video you want to replay",
     )
@@ -134,7 +137,7 @@ if __name__ == "__main__":
     round_by = float(args.round) if args.round else round_by
     if args.bounds:
         if len(args.bounds) != 4:
-            print("Need 4 inputs for --bounds.")
+            print("Need 4 inputs for --bounds [min-x, max-x, min-y, max-y]")
             sys.exit()
         else:
             args.bounds[0] = int(args.bounds[0])
@@ -150,7 +153,17 @@ if __name__ == "__main__":
                 print("Max Y needs to be larger than Min Y.")
                 sys.exit()
 
+    if args.origin:
+        if len(args.origin) != 3:
+            print("Need 3 inputs for --origin [x, y, z]")
+            sysm.exit()
+        else:
+            args.origin[0] = int(args.origin[0])
+            args.origin[1] = int(args.origin[1])
+            args.origin[2] = int(args.origin[2])
+
     bounds = args.bounds if args.bounds else C.DEFAULT_BOUNDS
+    origin = args.origin if args.origin else C.DEFAULT_ORIGIN
 
     if old_video_path is not None:
         # This function is current depricated, since I have no way of recording
@@ -162,7 +175,8 @@ if __name__ == "__main__":
                 MODE=mode,
                 OLD_VIDEO_PATH=old_video_path,
                 ROUNDING_AMOUNT=round_by,
-                BOUNDS=bounds
+                BOUNDS=bounds,
+                ORIGIN=origin
             )
         else:
             print(old_video_path + "1.avi not found.")
@@ -175,7 +189,8 @@ if __name__ == "__main__":
             RECORD_START_TIME = (time.time() + 20),
             MODE=mode,
             ROUNDING_AMOUNT=round_by,
-            BOUNDS=bounds
+            BOUNDS=bounds,
+            ORIGIN=origin
         )
     if m.save_video:
         print("NOTE: Saving video stream.")

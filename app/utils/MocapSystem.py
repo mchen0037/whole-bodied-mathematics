@@ -77,7 +77,8 @@ class MocapSystem(object):
         OLD_VIDEO_PATH=None,
         MODE=0,
         ROUNDING_AMOUNT=10,
-        BOUNDS=C.DEFAULT_BOUNDS
+        BOUNDS=C.DEFAULT_BOUNDS,
+        ORIGIN=C.DEFAULT_ORIGIN,
     ):
         self.num_cameras = NUMBER_OF_CAMERAS_IN_SYSTEM
         self.save_video = SAVE_VIDEO
@@ -85,6 +86,7 @@ class MocapSystem(object):
         self.old_video_path = OLD_VIDEO_PATH
         self.rounding_amount = ROUNDING_AMOUNT # How much to round output to
         self.bounds = BOUNDS
+        self.origin = ORIGIN
         self.mode = MODE # Graph X-Y (0) or X-Z (1)
 
         self.aruco_pose_dict = {} # a dictionary of PoseQueues
