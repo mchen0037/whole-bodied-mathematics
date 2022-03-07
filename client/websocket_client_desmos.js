@@ -20,7 +20,7 @@ function getColor(id) {
 
 function create_web_socket_connection() {
   // This code is run on the client end
-  var app = calculator;
+  var app = calc;
   var ws = new WebSocket("ws://localhost:5000/echo");
 
   ws.onopen = function() {
