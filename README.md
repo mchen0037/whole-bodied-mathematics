@@ -1,7 +1,8 @@
+# Whole Bodied Mathematics
 
 ## List of Activities and # of people
-* [Mathematical Imagery Trainer for Proportion](https://www.desmos.com/calculator/kvgsjrg6hm) (2)
-* [Mathematical Imagery Trainer for Perpendicular Lines](https://www.desmos.com/calculator/fcsqtdpnzf) (4)
-* [Parabola Exploration for Symmetry](https://www.desmos.com/calculator/utvpov3iik) (4)
-* [Parabola Regression 5 pt](https://www.desmos.com/calculator/9gz6lotc98) (5)
-* [Linear Regression 5 pt](https://www.desmos.com/calculator/f4gaf6uvue) (5)
+* [Parabola Exploration (Vertex Form)](https://www.desmos.com/calculator/rl6ojhxuf2) (2)
+* [Parabola Exploration (x-intercepts)](https://www.desmos.com/calculator/nl4quf98pz) (3)
+* [Match My Parabola (Vertex Form)](https://www.desmos.com/calculator/yopa0cvjlq) (2)
+* [Match My Parabola (x-intercepts)](https://www.desmos.com/calculator/dn8alceruh) (3-4)
+* [Create your own!](https://www.desmos.com/calculator/1hxny2gfrh)
