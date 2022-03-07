@@ -20,13 +20,12 @@ function getColor(id) {
 
 function create_web_socket_connection() {
   // This code is run on the client end
-  var app = calc;
   var ws = new WebSocket("ws://localhost:5000/echo");
 
   ws.onopen = function() {
      // Web Socket is connected, send data using send()
      for (var i = 0; i < 10; i++) {
-       app.removeExpression({id: `P_{${i}}`});
+       Calc.removeExpression({id: `P_{${i}}`});
      }
      document.getElementById("status-icon").className = "bi bi-record-fill"
      document.getElementById("status-icon").style.color = "red"
@@ -53,11 +52,12 @@ function create_web_socket_connection() {
     // Update the position of each individual point
     for (var i = 0; i < keys.length; i++) {
       color = getColor(keys[i]);
-      app.setExpression({
+      Calc.setExpression({
         "id": `P_{${keys[i]}}`,
         "latex": `P_{${keys[i]}}=(${parsed[keys[i]].x}, ${parsed[keys[i]].y})`,
         "dragMode": Desmos.DragModes.NONE,
-        "color": color
+        "color": color,
+        "folderId": "student_points",
       })
       if (i == 0) {
         s_list_latex = s_list_latex + `P_{${keys[i]}}`
@@ -68,11 +68,12 @@ function create_web_socket_connection() {
     }
     s_list_latex = s_list_latex + `\\right]`
     // Update the list of student points -- handles if a kid disappears or comes back
-    app.setExpression({
+    Calc.setExpression({
       "type": "expression",
       "id": "s_list",
       "latex": s_list_latex,
-      "hidden": true
+      "hidden": true,
+      "folderId": "student_points",
     })
   };
 

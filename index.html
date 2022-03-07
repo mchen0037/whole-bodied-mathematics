@@ -20,8 +20,8 @@
   </div>
   <script>
     var elt = document.getElementById('Calc');
-    var calc = Desmos.GraphingCalculator(elt);
-    calc.updateSettings({
+    var Calc = Desmos.GraphingCalculator(elt);
+    Calc.updateSettings({
       "keypad" : false,
       "pasteGraphLink" : true,
       "zoomButtons": false,
@@ -33,11 +33,16 @@
       "projectorMode": true,
       "showGrid": true
     })
-    calc.setMathBounds({
+    Calc.setMathBounds({
       "left": -25,
       "right": 25,
       "bottom": -20,
       "top": 20
+    })
+    app.setExpression({
+      "id": "points_folder",
+      "type": "folder",
+      "title": "Student Points",
     })
   </script>
   <script src="client/websocket_client_desmos.js">
