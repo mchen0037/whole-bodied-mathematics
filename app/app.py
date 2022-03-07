@@ -50,47 +50,48 @@ def echo(sock):
             prev = time.time()
             sock.send(data)
             avg_aruco_poses_dict = m.get_average_detected_markers()
-            # print(avg_aruco_poses_dict)
+            print(avg_aruco_poses_dict)
             if avg_aruco_poses_dict:
                 for aruco_marker in avg_aruco_poses_dict:
                     point_key = str(aruco_marker)
-                    rounded_x = get_client_value(
-                        avg_aruco_poses_dict[aruco_marker][0],
-                        scale_x,
-                        translate_x,
-                        m.rounding_amount
-                    )
-                    rounded_y = get_client_value(
-                        avg_aruco_poses_dict[aruco_marker][1],
-                        scale_y,
-                        translate_y,
-                        m.rounding_amount
-                    )
-                    rounded_z = get_client_value(
-                        avg_aruco_poses_dict[aruco_marker][2],
-                        scale_y,
-                        translate_z,
-                        m.rounding_amount
-                    )
-                    if point_key in list(data):
-                        if m.mode == 0:
-                            data[point_key]["x"] = rounded_x
-                            data[point_key]["y"] = rounded_y
-                        else:
-                            data[point_key]["x"] = rounded_x
-                            data[point_key]["y"] = rounded_z
+                    if avg_aruco_poses_dict[aruco_marker]:
+                        rounded_x = get_client_value(
+                            avg_aruco_poses_dict[aruco_marker][0],
+                            scale_x,
+                            translate_x,
+                            m.rounding_amount
+                        )
+                        rounded_y = get_client_value(
+                            avg_aruco_poses_dict[aruco_marker][1],
+                            scale_y,
+                            translate_y,
+                            m.rounding_amount
+                        )
+                        rounded_z = get_client_value(
+                            avg_aruco_poses_dict[aruco_marker][2],
+                            scale_y,
+                            translate_z,
+                            m.rounding_amount
+                        )
+                        if point_key in list(data):
+                            if m.mode == 0:
+                                data[point_key]["x"] = rounded_x
+                                data[point_key]["y"] = rounded_y
+                            else:
+                                data[point_key]["x"] = rounded_x
+                                data[point_key]["y"] = rounded_z
 
-                    else:
-                        if m.mode == 0:
-                            data[point_key] = {
-                                "x": rounded_x,
-                                "y": rounded_y
-                            }
                         else:
-                            data[point_key] = {
-                                "x": rounded_x,
-                                "y": rounded_z
-                            }
+                            if m.mode == 0:
+                                data[point_key] = {
+                                    "x": rounded_x,
+                                    "y": rounded_y
+                                }
+                            else:
+                                data[point_key] = {
+                                    "x": rounded_x,
+                                    "y": rounded_z
+                                }
 
 @app.teardown_appcontext
 def teardown(exception):
