@@ -7,6 +7,8 @@ More Documentation on the way!
 3. [Integer Addition](https://adjchen.com/whole-bodied-mathematics/assets/angry-birds.mp4)
 
 ## List of Activities and # of people
+* [30-60-90 Triangle](https://www.desmos.com/calculator/yy90a4oxms) (3)
+* [45-45-90 Triangle](https://www.desmos.com/calculator/ldtpvktekl) (3)
 * [Parabola Exploration (Vertex Form)](https://www.desmos.com/calculator/rl6ojhxuf2) (2)
 * [Parabola Exploration (x-intercepts)](https://www.desmos.com/calculator/nl4quf98pz) (3)
 * [Match My Parabola (Vertex Form)](https://www.desmos.com/calculator/yopa0cvjlq) (2)
