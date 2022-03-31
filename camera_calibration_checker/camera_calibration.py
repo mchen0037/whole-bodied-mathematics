@@ -29,6 +29,7 @@ cv.destroyAllWindows()
 # camera matrix, distortion coefficients, rotation vectors, translation vectors
 ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 data = {'camera_matrix': np.asarray(mtx).tolist(), 'dist_coeff': np.asarray(dist).tolist()}
+print(data)
 with open("calibration.yaml", "w") as f:
     yaml.dump(data, f)
 

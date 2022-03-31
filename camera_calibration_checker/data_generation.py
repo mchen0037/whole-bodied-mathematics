@@ -7,11 +7,11 @@
 
 import cv2
 
-camera = cv2.VideoCapture(4)
+camera = cv2.VideoCapture(0)
 ret, img = camera.read()
 
 # Change this
-path = "/home/mighty/repos/mocap-desmos/camera_calibration_checker/data/camera_4/"
+path = "/home/mighty/repos/whole-bodied-mathematics/camera_calibration_checker/data/camera_3/"
 count = 0
 while True:
     name = path + str(count)+".jpg"
@@ -22,6 +22,7 @@ while True:
     if cv2.waitKey(20) & 0xFF == ord('c'):
         cv2.imwrite(name, img)
         cv2.imshow("img", img)
+        print("picture taken??")
         count += 1
         if cv2.waitKey(0) & 0xFF == ord('q'):
             break;

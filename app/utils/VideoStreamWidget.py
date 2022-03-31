@@ -75,7 +75,7 @@ class VideoStreamWidget(object):
         self.src = camera_meta["src"] # cv2 camera source id or video history location
         self.capture = cv2.VideoCapture(self.src)
         self.status = None # Status of the camera
-        self.use_roi = True # roi = Region of Interest
+        self.use_roi = False # roi = Region of Interest
         self.img_raw = None # save for data collection
         self.img_gray = None # img_gray is undistorted
         self.undistorted_img = None # If use_roi is True, crop the img
