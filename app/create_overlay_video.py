@@ -1,7 +1,12 @@
+"""
+This file is depricated for now because the camera videos do not sync up with
+each other. If there is a way to make sure everything is synced up correctly,
+I can use this script again. 2022/04/20
+"""
+
 import cv2
 from utils.constants import constants as C
 import time
-
 
 DATA_FILE_PATH = "/media/mighty/research-1/collected_data_from_cameras"
 DATE = "2022_2_17/2022_2_17_14_57_"

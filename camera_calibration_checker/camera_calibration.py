@@ -27,14 +27,29 @@ for fname in images:
         # cv.waitKey(500)
 cv.destroyAllWindows()
 # camera matrix, distortion coefficients, rotation vectors, translation vectors
-ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
-data = {'camera_matrix': np.asarray(mtx).tolist(), 'dist_coeff': np.asarray(dist).tolist()}
+ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(
+    objpoints,
+    imgpoints,
+    gray.shape[::-1],
+    None,
+    None
+)
+data = {
+    'camera_matrix': np.asarray(mtx).tolist(),
+    'dist_coeff': np.asarray(dist).tolist()
+}
 with open("calibration.yaml", "w") as f:
     yaml.dump(data, f)
 
 mean_error = 0
 for i in range(len(objpoints)):
-    imgpoints2, _ = cv.projectPoints(objpoints[i], rvecs[i], tvecs[i], mtx, dist)
+    imgpoints2, _ = cv.projectPoints(
+        objpoints[i],
+        rvecs[i],
+        tvecs[i],
+        mtx,
+        dist
+    )
     error = cv.norm(imgpoints[i], imgpoints2, cv.NORM_L2)/len(imgpoints2)
     mean_error += error
 print( "total error: {}".format(mean_error/len(objpoints)) )

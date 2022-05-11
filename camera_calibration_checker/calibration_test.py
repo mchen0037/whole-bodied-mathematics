@@ -38,17 +38,30 @@ while True:
     h,  w = im_gray.shape[:2]
     # dst is undistorted image
     dst = cv2.undistort(im_gray, mtx, dist, None, newcameramtx)
-    corners, ids, rejectedImgPoints = aruco.detectMarkers(dst, aruco_dict, parameters=arucoParams)
+    corners, ids, rejectedImgPoints = aruco.detectMarkers(
+        dst,
+        aruco_dict,
+        parameters=arucoParams
+    )
     #cv2.imshow("original", img_gray)
     if corners == None:
         print ("pass")
     else:
-        ret, rvec, tvec = aruco.estimatePoseBoard(corners, ids, board, newcameramtx, dist, None, None) # For a board
+        ret, rvec, tvec = aruco.estimatePoseBoard(
+            corners,
+            ids,
+            board,
+            newcameramtx,
+            dist,
+            None,
+            None
+        ) # For a board
         print ("Rotation\n", rvec)
         print ("Translation\n", tvec)
         if ret != 0:
             img_aruco = aruco.drawDetectedMarkers(dst, corners, ids, (0,255,0))
-            img_aruco = aruco.drawAxis(dst, newcameramtx, dist, rvec, tvec, 10)    # axis length 100 can be changed according to your requirement
+            # axis length 100 can be changed according to your requirement
+            img_aruco = aruco.drawAxis(dst, newcameramtx, dist, rvec, tvec, 10)
 
         if cv2.waitKey(0) & 0xFF == ord('q'):
             break;

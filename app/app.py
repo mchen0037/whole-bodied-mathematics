@@ -1,3 +1,9 @@
+"""
+    This is the mainFlask application which will run a web server to host
+    the motion capture system and send pose data via a WebSocket to
+    ws://localhost:5000/echo
+"""
+
 import os
 import time
 import json
@@ -18,6 +24,10 @@ sock = Sock(app)
 
 @app.route("/show_frames")
 def hello_world():
+    """
+        TODO: This function needs to be replaced by a client side application
+        which displays the camera values based on ?id=#.
+    """
     while True:
         try:
             for v in m.active_video_streams:
@@ -27,6 +37,28 @@ def hello_world():
     return("hello world")
 
 def get_client_value(camera_value, scale, translation, rounding_amount):
+    """
+        Uses the scaling and translation factors calculated in echo() and
+        calculates the new, rounded value. scale, translation, and
+        rounding_amount are calculated from the CLI inputs.
+
+        Inputs:
+            - camera_value <float>: The expected x, y, or z value, detected by
+                the camera
+
+            - scale <float>: The factor we need to multiply to the camera_value
+                to convert a real position data to the projected space
+
+            - translation <float>: The factor we need to add to the camera_value
+                to convert a real position data to the projected space
+
+            - rounding_amount <float>: The point which we want to round to. For
+                example, 15.238 with a rounding_amount of 0.1 will round to 15.2
+
+        Returns:
+            - rounded_val <float>: The final x, y, or z value which will be sent
+                to the client side.
+    """
     val = scale * (camera_value - translation)
     rounded_val = round(val / rounding_amount) * rounding_amount
     return rounded_val
@@ -37,23 +69,36 @@ def echo(sock):
     # update these with student points from webcam
     data = {}
     prev = 0
-    scale_x = abs(m.bounds[0] - m.bounds[1]) / abs(C.DEFAULT_BOUNDS[0] - C.DEFAULT_BOUNDS[1])
-    scale_y = abs(m.bounds[2] - m.bounds[3]) / abs(C.DEFAULT_BOUNDS[2] - C.DEFAULT_BOUNDS[3])
+
+    # Calculate final scaling and translation factors to the data,
+    # based on the input parameters specified in CLI
+    scale_x = (
+        abs(m.bounds[0] - m.bounds[1]) /
+        abs(C.DEFAULT_BOUNDS[0] - C.DEFAULT_BOUNDS[1])
+    )
+    scale_y = (
+        abs(m.bounds[2] - m.bounds[3]) /
+        abs(C.DEFAULT_BOUNDS[2] - C.DEFAULT_BOUNDS[3])
+    )
+
     translate_x = m.origin[0]
     translate_y = m.origin[1]
     translate_z = m.origin[2]
+
+    # send the data of the points over the websocket
     while True:
-        # send the data of the points over the websocket
-        # print(data)
-        time_elapsed = time.time() - prev # time.time() returns seconds
+        # time.time() returns seconds
+        time_elapsed = time.time() - prev
+
         if time_elapsed >= 1./C.MOCAP_OUT_FRAME_RATE:
             prev = time.time()
             sock.send(data)
             avg_aruco_poses_dict = m.get_average_detected_markers()
-            # print(avg_aruco_poses_dict)
+
             if avg_aruco_poses_dict:
                 for aruco_marker in avg_aruco_poses_dict:
-                    point_key = str(aruco_marker)
+
+                    # Calculate the final value before sending it to the client
                     rounded_x = get_client_value(
                         avg_aruco_poses_dict[aruco_marker][0],
                         scale_x,
@@ -72,7 +117,12 @@ def echo(sock):
                         translate_z,
                         m.rounding_amount
                     )
+
+                    # Check to see if the aruco marker is already sent to the
+                    # client before.
+                    point_key = str(aruco_marker)
                     if point_key in list(data):
+                        # If it is, update the value in the dictionary.
                         if m.mode == 0:
                             data[point_key]["x"] = rounded_x
                             data[point_key]["y"] = rounded_y
@@ -81,6 +131,7 @@ def echo(sock):
                             data[point_key]["y"] = rounded_z
 
                     else:
+                        # If it is not, add it to the dictionary.
                         if m.mode == 0:
                             data[point_key] = {
                                 "x": rounded_x,
@@ -97,10 +148,35 @@ def teardown(exception):
     print(exception)
 
 if __name__ == "__main__":
+    """
+        Parse the input from the CLI to tweak settings for the Mocap System.
+
+        Variables:
+            - mode <string>: Should be "xy" or "xz", depending on how you want
+                real positions should affect the projected graph. "xy" should be
+                most cases, while "xz" will use real world height to project as
+                the y-axis on the graph.
+
+            - save_video <boolean>: Determines if the VideoStream data should be
+                saved or not. This is a #FIXME, as my computer can't handle
+                recording all four cameras at the same time, consistently
+
+            - old_video_path <string>: DEPRICATED Was used to "replay" old data.
+                This is on hold until I can save all four cameras in sync.
+
+            - round_by <float>: Used to determine the precision of the values
+                sent to the client. For example, 15.238 with a rounding_amount
+                of 0.1 will round to 15.2.
+
+            - bounds <list>: Used to describe the [min-x, max-x, min-y, max-y]
+                values which will be projected on the graph. Default bounds are
+                described in the Constants file.
+
+    """
     mode = ""
     save_video = False
     old_video_path = ""
-    round_by = 1
+    round_by = 1.0
     bounds = []
 
     parser = argparse.ArgumentParser()
@@ -110,7 +186,7 @@ if __name__ == "__main__":
         action="store_true"
     )
     parser.add_argument("-b", "--bounds",
-        help="Describe the bounds for the space using min_x, max_x, min_y, max_y",
+        help="Describe bounds for the space using min_x, max_x, min_y, max_y",
         nargs="*"
     )
     parser.add_argument("-o", "--origin",
@@ -169,6 +245,8 @@ if __name__ == "__main__":
         # This function is current depricated, since I have no way of recording
         # all four video streams at the same time.
         if os.path.exists(old_video_path + "1.avi"):
+            print("This function is depcriated.")
+            sys.exit()
             m = MocapSystem(
                 NUMBER_OF_CAMERAS_IN_SYSTEM=C.NUM_CAMERAS,
                 SAVE_VIDEO=False,
@@ -179,9 +257,11 @@ if __name__ == "__main__":
                 ORIGIN=origin
             )
         else:
-            print(old_video_path + "1.avi not found.")
+            print("This function is depcriated.")
             sys.exit()
+            print(old_video_path + "1.avi not found.")
     else:
+        print("Initiating Mocap System...")
         m = MocapSystem(
             NUMBER_OF_CAMERAS_IN_SYSTEM=C.NUM_CAMERAS,
             SAVE_VIDEO = save_video,
