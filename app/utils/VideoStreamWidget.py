@@ -19,25 +19,31 @@ class VideoStreamWidget(object):
             - detecting aruco markers
             - saving video #FIXME: cannot record multiple streams right now
 
+        Class Variables:
         - id <int>: the camera id in the real world
 
         - camera_meta <dict>: Meta info passed in from MocapSystem
+            Example:
             {
                 "src": int, the cv2.VideoCapture(#)
                 "mtx": np.array, the camera matrix to undistort the image
-                "dist_coeff": np.array, the distance coeffs to undistort the image
-                "new_camera_mtx": np.array, the new camera matrix to undistort img
+                "dist_coeff": np.array, the distance coeffs to undistort img
+                "new_camera_mtx": np.array, the camera matrix to undistort img
                 "save_video" : bool, if we should save video or not
             }
 
-        - capture <cv2.VideoCapture>: the VideoCapture object for reading the camera
+        - capture <cv2.VideoCapture>: the VideoCapture object for reading the
+            camera
 
-        - status <bool>: Status of the camera, returned from cv2.VideoCapture.read()
+        - status <bool>: Status of the camera, returned from
+            cv2.VideoCapture.read()
 
-        - use_roi <bool>: When calling cv2.undistort(), we get a region of interest (ROI)
-            box. use_roi determines if we want to crop our image based on that ROI
+        - use_roi <bool>: When calling cv2.undistort(), we get a region of
+            interest (ROI) box. use_roi determines if we want to crop our image
+            based on that ROI. Defaults to True.
 
-        - img_raw <np.array>: the raw image from the camera, without any processing done
+        - img_raw <np.array>: the raw image from the camera, without any
+            processing done
 
         - img_gray <np.array>: the raw image turned into gray scale
 
@@ -63,9 +69,10 @@ class VideoStreamWidget(object):
                 }
             }
 
-        - update_thread <Thread>: Thread to handle reading the cameras, undistorting
-            the image, and detecting aruco markers. # TODO: Is there value in
-            putting this in a Process instead of a Thread?
+        - update_thread <Thread>: Thread to handle reading the cameras,
+            undistorting the image, and detecting aruco markers.
+            # TODO: Is there value in putting this in a Process instead of a
+            Thread?
 
         - save_video_thread <Thread>: Handles saving video in a separate thread
     """
@@ -104,8 +111,8 @@ class VideoStreamWidget(object):
             Inputs: None
 
             Returns:
-                - video_result <cv2.VideoWriter> VideoWriter object which handles
-                    saving a .avi file on the file system
+                - video_result <cv2.VideoWriter> VideoWriter object which
+                    handles saving a .avi file on the file system
         """
         if self.camera_meta["save_video"]:
             current_datetime = datetime.datetime.now()

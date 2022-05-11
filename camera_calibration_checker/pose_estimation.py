@@ -52,7 +52,14 @@ while True:
         # estimate the position of aruco markers in the image frame
         # https://docs.opencv.org/4.5.3/d9/d6a/group__aruco.html#ga84dd2e88f3e8c3255eb78e0f79571bd1
         # this returns a list of rotation vectors and a list of translation vectors of where each id is located.
-        rvecs, tvecs, _objPoints = aruco.estimatePoseSingleMarkers(corners, markerLength, newcameramtx, dist, None, None)
+        rvecs, tvecs, _objPoints = aruco.estimatePoseSingleMarkers(
+            corners,
+            markerLength,
+            newcameramtx,
+            dist,
+            None,
+            None
+        )
         id_pose_dict = {}
         if ret != 0:
             if ids is not None:
@@ -60,7 +67,14 @@ while True:
                 # put the data in a dictionary, prepped for JSON transfer
                 for i, id in enumerate(ids):
                     id_pose_dict[id[0]] = {"rvec": rvecs[i], "tvec": tvecs[i]}
-                    img_aruco = aruco.drawAxis(dst, newcameramtx, dist, rvecs[i], tvecs[i], 3)
+                    img_aruco = aruco.drawAxis(
+                        dst,
+                        newcameramtx,
+                        dist,
+                        rvecs[i],
+                        tvecs[i],
+                        3
+                    )
                     print("rvec", rvecs[i])
                     print("tvec", tvecs[i])
             # draw the detected markers (squares) around each aruco marker

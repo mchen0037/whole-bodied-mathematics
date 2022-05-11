@@ -1,3 +1,9 @@
+"""
+    The MocapSystem Class handles the entire camera system as a whole. It
+    handles data aggregation across the VideoStreamWidgets and prepares it to be
+    sent to the client-side.
+"""
+
 import time
 import datetime
 import numpy as np
@@ -20,23 +26,25 @@ class MocapSystem(object):
         track of all data in the system and all boolean flags which are used
         throughout the code.
 
+        Class Variables:
         - num_cameras <int> : how many cameras are going to be read.
             This corresponds to C.NUM_CAMERAS in constants.py
 
-        - save_video <boolean>: Flag which determines if we should save VideoStream
-            data or not. Currently (2/27/22), if this is marked True, it will
-            only save data from Camera 3. This is a #FIXME, as my computer
-            can't handle recording all four cameras at the same time, consistently
+        - save_video <boolean>: Flag which determines if we should save
+            VideoStreamWidget data or not. Currently (2/27/22), if this is
+            marked True, it will only save data from Camera 3. This is a #FIXME,
+            as my computer can't handle recording all cameras at the same time
 
         - screen_capture: <ScreenCapture> Handles screen capturing if save_video
             is set to True
 
-        - record_start_time <float>: a time.time() value. If save_video is True, time
-            the system will start recording at, to help sync up all the videos together
+        - record_start_time <float>: a time.time() value. If save_video is True,
+            time the system will start recording at, to help sync up all the
+            videos together. #FIXME
 
-        - old_video_path <string>: This path is used to read old VideoStream to run the
-            system based on old inputs. Currently (2/27/22) useless, since I
-            can't record all four cameras. Example:
+        - old_video_path <string>: This path is used to read old VideoStream to
+            run the system based on old inputs. Currently (2/27/22) useless,
+            since I can't record all four cameras. Example:
             "/media/mighty/research-1/collected_data_from_cameras/video/2022_2_17/2022_2_14_17_32_camera_"
 
         - rounding_amount <int>: determines how much I round my output to. i.e.
@@ -48,8 +56,8 @@ class MocapSystem(object):
         - scale_y <float>: Determines what to multiply every value by to scale
             the room up or down for the y value.
 
-        - mode <int>: which tell us to plot using (x,y) positions in the room (0)
-            or (x,z) positions in the room (1)
+        - mode <int>: which tell us to plot using (x,y) positions in the room
+            (0) or (x,z) positions in the room (1)
 
         - aruco_pose_dict <dictionary>: Each key refers to a particular
             aruco id and the value is a PoseQueue to determine the position.
@@ -57,16 +65,18 @@ class MocapSystem(object):
         - active_video_streams <List<VideoStreamWidget>>: a list of all the
             VideoStreamWidget objects which handle all cameras
 
-        - camera_id_meta_dict <dictionary>:
+        - camera_id_meta_dict <dictionary>: Describes meta data of the camera.
+            Example:
             <int> camera_id {
                 "src": <int> the cv2.VideoCapture(#)
                 "mtx": <np.array> the camera matrix to undistort the image
-                "dist_coeff": <np.array> the distance coeffs to undistort the image
-                "new_camera_mtx": <np.array> the new camera matrix to undistort img
+                "dist_coeff": <np.array> the distance coeffs to undistort image
+                "new_camera_mtx": <np.array> the camera matrix to undistort img
                 "save_video": <bool> if we should save video or not
             }
 
-        - update_markers_thread <Thread>: Handles restructuring data into JSON format
+        - update_markers_thread <Thread>: Handles restructuring data into JSON
+            format
 
     """
     def __init__(
@@ -123,12 +133,13 @@ class MocapSystem(object):
             Inputs: None
 
             Returns:
-                - camera_id_meta_dict <dict>: The meta data for each camera. Described
-                    in MocapSystem comment
+                - camera_id_meta_dict <dict>: The meta data for each camera.
+                    Example in MocapSystem comment
+
                 - active_video_streams <list>: List of VideostreamWidgets for
                     handling the Mocap System
         """
-        # This for loop iterates over 200 cv2 Video Capture Sources
+        # This for loop iterates over 100 cv2 Video Capture Sources
         # Doing this because the webcams aren't correlating with what's in
         # /dev/video/*. The Camera number corresponds to the camera id
         # based on my setup. It's just used for calibration and transformation.
@@ -197,9 +208,9 @@ class MocapSystem(object):
             Inputs: None
 
             Returns:
-                - camera_id_meta_dict <dict>: The meta data for each camera. Described
-                    in MocapSystem comment
-                - active_video_streams <list>: List of VideostreamWidgets for
+                - camera_id_meta_dict <dict>: The meta data for each camera.
+                    Example in MocapSystem comment
+                - active_video_streams <list>: List of VideoStreamWidgets for
                     handling the Mocap System
         """
         camera_id_meta_dict = {}
@@ -315,17 +326,19 @@ class MocapSystem(object):
                 for v in self.active_video_streams:
                     for aruco_id in list(v.detected_aruco_ids_dict):
                         if aruco_id in self.aruco_pose_dict:
-                            rvec_arr = v.detected_aruco_ids_dict[aruco_id]["rvec"]
-                            tvec_arr = v.detected_aruco_ids_dict[aruco_id]["tvec"]
+                            rvec_arr = (
+                                v.detected_aruco_ids_dict[aruco_id]["rvec"]
+                            )
+                            tvec_arr = (
+                                v.detected_aruco_ids_dict[aruco_id]["tvec"]
+                            )
+
                             self.aruco_pose_dict[aruco_id].push(tvec_arr)
                         else:
                             self.aruco_pose_dict[aruco_id] = PoseQueue(
                                 aruco_id,
                                 v.detected_aruco_ids_dict[aruco_id]["tvec"]
                             )
-                    # if aruco_id == 1:
-                    #     print(v.id, v.detected_aruco_ids_dict[aruco_id]["tvec"])
-
 
     def get_average_detected_markers(self):
         """
@@ -336,8 +349,8 @@ class MocapSystem(object):
             Inputs: None
 
             Returns:
-                - expected_aruco_poses_dict <dict>: A dictionary with keys of aruco_ids
-                    and values of the expected [x, y, z] values.
+                - expected_aruco_poses_dict <dict>: A dictionary with keys of
+                    aruco_ids and values of the expected [x, y, z] (list) values
         """
         # Grabs the expected position from each PoseQueue for each aruco id
         # And returns it for JSON transfer

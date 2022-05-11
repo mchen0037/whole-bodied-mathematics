@@ -13,11 +13,11 @@ ws.onmessage = function (evt) {
    // Convert string to Array of Objects
    received_msg = received_msg.replaceAll("'", "\"");
    var parsed = JSON.parse(received_msg);
-   console.log(parsed)
+   // console.log(parsed)
    keys = Object.keys(parsed)
 
    for (var i = 0; i < keys.length; i++) {
-     console.log(`P_{${keys[i]}}=(${parsed[keys[i]].x},${parsed[keys[i]].y})`)
+     // console.log(`P_{${keys[i]}}=(${parsed[keys[i]].x},${parsed[keys[i]].y})`)
      app.evalCommand(`P_{${keys[i]}}=(${parsed[keys[i]].x},${parsed[keys[i]].y})`)
    }
 };
